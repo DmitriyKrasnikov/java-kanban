@@ -4,11 +4,15 @@ import Tasks.Status;
 import Tasks.Subtask;
 
 import java.util.HashMap;
-
+/*Я не стал создавать абстрактный класс, для того, чтобы наследовать от него TaskManager и EpicManager. Потому что в
+классе EpicManager определены практически одинаковые методы для объектов Epic и SubTask. Поэтому пришлось бы
+переопределять один метод два раза, и тогда непонятно на какой метод ссылаться. Я решил попробовать сделать через
+вложенный класс, но тогда нет доступа к нестатичной таблице epics. Поэтому оставил как есть. Думаю, конкретно в этом
+случае это роли не играет.*/
 public class EpicManager {
     private HashMap<Integer, Epic> epics = new HashMap<>();
     //Для начала поставил public, чтобы не путаться. Потом просто забыл поменять. Здесь подойдет модификатор private.
-    // Так как работа с таблицей ведется только с помощью методов класса EpicManager.
+    // Так как, работа с таблицей ведется только с помощью методов класса EpicManager.
 
     public Epic epicMaker(int id, String name, String description) {
         HashMap<Integer, Subtask> subtasks = new HashMap<>();

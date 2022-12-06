@@ -8,52 +8,68 @@ import Tasks.Task;
 import java.util.Scanner;
 
 public class Main {
-    static TaskManager manager = new TaskManager();
-    static EpicManager epicManager = new EpicManager();
-    static Scanner scanner = new Scanner(System.in);
+    public static TaskManager manager = new TaskManager();
+    public static EpicManager epicManager = new EpicManager();
+    public static Scanner scanner = new Scanner(System.in);
 
-    static int id = 0;
-    static int number = 0;
-    static String name = "";
-    static String description = "";
-    static Status status;
+    public static int taskId = 1000;
+    public static int epicId = 2000;
+    public static int subTaskId = 3000;
+    public static int number = 0;
+    public static String name = "";
+    public static String description = "";
+    public static Status status;
 
     public static void main(String[] args) {
-        //Комментарии к заданию в файле README
+        //На этот раз комментарии в коде.
+        //Все замечания устранил, за исключением создания абстрактного класса для TaskManager и EpicManager и
+        // лямбда - выражений. 
         System.out.println("Выберите, что хотите сделать:");
         while (true) {
-            System.out.println("1 -Получение списка всех задач.");
-            System.out.println("2 -Удаление всех задач.");
+            System.out.println("1 - Получение списка всех задач.");
+            System.out.println("2 - Удаление всех задач.");
             System.out.println("3 - Получение по идентификатору.");
             System.out.println("4 - Создание. Сам объект должен передаваться в качестве параметра.");
             System.out.println("5 - Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра.");
             System.out.println("6 - Удаление по идентификатору.");
-            System.out.println("Любая другая цифра - выход");
+            System.out.println("7 - Выход");
             int command = scanner.nextInt();
-            if (command == 1){
-                //Получение списка всех задач.
-                taskList();
-            } else if (command==2) {
-                //Удаление всех задач.
-                taskAnnihilator();
-            } else if (command==3) {
-                //Получение по идентификатору.
-                getter();
-            } else if (command==4) {
-                //Создание. Сам объект должен передаваться в качестве параметра.
-                maker();
-            } else if (command==5) {
-                //Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра.
-                update();
-            }else if (command==6){
-                //Удаление по идентификатору.
-                remote();
-            }else {
-                return;
+            switch (command){
+                case 1:
+                    //Получение списка всех задач.
+                    taskList();
+                    break;
+                case 2:
+                    //Удаление всех задач.
+                    taskAnnihilator();
+                    break;
+                case 3:
+                    //Получение по идентификатору.
+                    getter();
+                    break;
+                case 4:
+                    //Создание. Сам объект должен передаваться в качестве параметра.
+                    maker();
+                    break;
+                case 5:
+                    //Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра.
+                    update();
+                    break;
+                case 6:
+                    //Удаление по идентификатору.
+                    remote();
+                    break;
+                case 7:
+                    return;
+                default:
+                    System.out.println("Неверная команда");
+                    break;
+
             }
         }
+    }
 
-
+    public interface changeStatus{
 
     }
 
@@ -65,7 +81,7 @@ public class Main {
         description = scanner.nextLine();
             System.out.println("Выберите статус задачи\n 1 - NEW\n 2 - IN_PROGRESS\n 3 - DONE");
             int statusNumber = scanner.nextInt();
-            switch (statusNumber) {
+            switch (statusNumber) {//Лямбда - выражения я понял в общих чертах, но как применить их здесь я не придумал.
                 case 1:
                     status = Status.NEW;
                     break;
@@ -168,15 +184,15 @@ public class Main {
                 case 1:
                     data();
                 Task task = manager.taskMaker(name,description,status);
-                    id+=1;
-                manager.taskAdd(id,task);
+                    taskId+=1;
+                manager.taskAdd(taskId,task);
                     break;
                 case 2:
                     data();
-                    id+=1;
-                    Epic epic = epicManager.epicMaker(id,name,description);
-                    epicManager.epicAdd(id,epic);
-                    epicManager.takeEpicStatus(id);
+                    epicId+=1;
+                    Epic epic = epicManager.epicMaker(epicId,name,description);
+                    epicManager.epicAdd(epicId,epic);
+                    epicManager.takeEpicStatus(epicId);
                     break;
                 case 3:
                     System.out.println("Введите идентефикатор эпика");
@@ -187,8 +203,8 @@ public class Main {
                     }
                     data();
                     Subtask subtask = epicManager.subtaskMaker(name,description,status);
-                    id+=1;
-                    epicManager.subtaskAdd(id,number,subtask);
+                    subTaskId+=1;
+                    epicManager.subtaskAdd(subTaskId,number,subtask);
                     epicManager.takeEpicStatus(number);
                     break;
                 default:

@@ -29,7 +29,7 @@ public class Task {
 
     @Override
     public String toString(){
-        return getName() + "\n" + getDescription() + "\n" + getStatus();
+        return "Имя: " + getName() + "\nОписание: " + getDescription() + "\nСтатус: " + getStatus();
     }
 
 }
