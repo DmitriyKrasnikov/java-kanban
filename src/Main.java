@@ -1,6 +1,7 @@
 import Manager.EpicManager;
 import Manager.TaskManager;
 import Tasks.Epic;
+import Tasks.Status;
 import Tasks.Subtask;
 import Tasks.Task;
 
@@ -15,7 +16,7 @@ public class Main {
     static int number = 0;
     static String name = "";
     static String description = "";
-    static String status = "";
+    static Status status;
 
     public static void main(String[] args) {
         //Комментарии к заданию в файле README
@@ -66,13 +67,13 @@ public class Main {
             int statusNumber = scanner.nextInt();
             switch (statusNumber) {
                 case 1:
-                    status = "NEW";
+                    status = Status.NEW;
                     break;
                 case 2:
-                    status = "IN_PROGRESS";
+                    status = Status.IN_PROGRESS;
                     break;
                 case 3:
-                    status = "DONE";
+                    status = Status.DONE;
                     break;
                 default:
                     System.out.println("Не мороси");
@@ -180,7 +181,7 @@ public class Main {
                 case 3:
                     System.out.println("Введите идентефикатор эпика");
                     number = scanner.nextInt();
-                    if(epicManager.epics.isEmpty()||!(epicManager.epics.containsKey(number))){
+                    if(epicManager.checkEpicsHashMap(number)){
                         System.out.println("Такого эпика не существует");
                         break;
                     }

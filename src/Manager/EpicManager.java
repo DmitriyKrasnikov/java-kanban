@@ -1,22 +1,24 @@
 package Manager;
 import Tasks.Epic;
+import Tasks.Status;
 import Tasks.Subtask;
 
 import java.util.HashMap;
 
 public class EpicManager {
-    public HashMap<Integer, Epic> epics = new HashMap<>();
+    private HashMap<Integer, Epic> epics = new HashMap<>();
+    //Для начала поставил public, чтобы не путаться. Потом просто забыл поменять. Здесь подойдет модификатор private.
+    // Так как работа с таблицей ведется только с помощью методов класса EpicManager.
 
     public Epic epicMaker(int id, String name, String description) {
-        String status = "NEW";
         HashMap<Integer, Subtask> subtasks = new HashMap<>();
         if (epics.containsKey(id)) {
             subtasks = (epics.get(id)).subtasks;
         }
-        return new Epic(name, description, status, subtasks);
+        return new Epic(name, description, Status.NEW, subtasks);
     }
 
-    public Subtask subtaskMaker(String name, String description, String status) {
+    public Subtask subtaskMaker(String name, String description, Status status) {
         return new Subtask(name, description, status);
     }
 
@@ -25,7 +27,7 @@ public class EpicManager {
     }
 
     public void subtaskAdd(int id, int number, Subtask subtask) {
-        if (epics.isEmpty() || !(epics.containsKey(number))) {
+        if (checkEpicsHashMap(number)) {
             System.out.println("Такого эпика не существует");
         } else {
             epics.get(number).subtasks.put(id, subtask);
@@ -39,15 +41,13 @@ public class EpicManager {
             for (int id : epics.keySet()) {
                 Epic epic = epics.get(id);
                 System.out.println("Идентификатор " + id);
-                System.out.println("Задача: " + epic.getName());
-                System.out.println("Описание: " + epic.getDescription());
-                System.out.println("Статус: " + epic.getStatus());
+                System.out.println(epic);
             }
         }
     }
 
     public void subtaskListAllTasks(int number) {
-        if ((epics.isEmpty())||!(epics.containsKey(number))){
+        if (checkEpicsHashMap(number)){
             System.out.println("Такого эпика не существует, подзадач соответственно тоже");
         }else {
                 Epic epic = epics.get(number);
@@ -55,9 +55,7 @@ public class EpicManager {
                 for (int id : epic.subtasks.keySet()) {
                     Subtask subtask = epic.subtasks.get(id);
                     System.out.println("Идентификатор " + id);
-                    System.out.println("Задача: " + subtask.getName());
-                    System.out.println("Описание: " + subtask.getDescription());
-                    System.out.println("Статус: " + subtask.getStatus());
+                    System.out.println(subtask);
                 }
             }else {
                 System.out.println("Такой подзадачи не существует, или эпик не содержит подзадач");
@@ -81,9 +79,7 @@ public class EpicManager {
     public void epicGetById(int number) {
         if (epics.containsKey(number)) {
             Epic epic = epics.get(number);
-            System.out.println("Задача: " + epic.getName());
-            System.out.println("Описание: " + epic.getDescription());
-            System.out.println("Статус: " + epic.getStatus());
+            System.out.println(epic);
         }else {
             System.out.println("Такого эпика не существует");
         }
@@ -95,9 +91,7 @@ public class EpicManager {
             Epic epic = epics.get(number1);
             if (epic.subtasks.containsKey(number2)) {
                 Subtask subtask = epic.subtasks.get(number2);
-                System.out.println("Задача: " + subtask.getName());
-                System.out.println("Описание: " + subtask.getDescription());
-                System.out.println("Статус: " + subtask.getStatus());
+                System.out.println(subtask);
             }else {
                 System.out.println("Такой подзадачи не существует");
             }
@@ -112,7 +106,7 @@ public class EpicManager {
     }
 
     public void subtaskUpdate(Subtask subtask, int epicNumber, int subtaskNumber) {
-        if (epics.isEmpty()||!(epics.containsKey(epicNumber))){
+        if (checkEpicsHashMap(epicNumber)){
             System.out.println("Такого эпика не существует");
         }else {
             Epic epic = epics.get(epicNumber);
@@ -146,7 +140,7 @@ public class EpicManager {
     }
 
     public void takeEpicStatus(int number) {
-        if(epics.isEmpty()||!(epics.containsKey(number))){
+        if(checkEpicsHashMap(number)){
             System.out.println("Такого эпика не существует");
         }else{
         Epic epic = epics.get(number);
@@ -157,9 +151,9 @@ public class EpicManager {
             statusNew = "NEW";
         }
         for (Subtask subtask : epic.subtasks.values()) {
-            if ((subtask.getStatus()).equals("NEW")) {
+            if ((subtask.getStatus()).equals(Status.NEW)) {
                 statusNew = "NEW";
-            } else if ((subtask.getStatus()).equals("DONE")) {
+            } else if ((subtask.getStatus()).equals(Status.DONE)) {
                 statusDone = "DONE";
             } else {
                 statusInProgress = "IN_PROGRESS";
@@ -167,12 +161,16 @@ public class EpicManager {
         }
 
         if (((statusNew).equals("NEW")) && ((statusDone).equals("")) && ((statusInProgress).equals(""))) {
-            epic.setStatus("NEW");
+            epic.setStatus(Status.NEW);
         } else if (((statusNew).equals("")) && ((statusDone).equals("DONE")) && (statusInProgress.equals(""))) {
-            epic.setStatus("DONE");
+            epic.setStatus(Status.DONE);
         } else {
-            epic.setStatus("IN_PROGRESS");
+            epic.setStatus(Status.IN_PROGRESS);
         }
         }
+    }
+
+    public boolean checkEpicsHashMap(int number) {
+        return epics.isEmpty() || !(epics.containsKey(number));
     }
 }

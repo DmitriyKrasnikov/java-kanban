@@ -1,12 +1,14 @@
 package Manager;
+import Tasks.Status;
 import Tasks.Task;
 
 import java.util.HashMap;
 
 public class TaskManager {
-    HashMap<Integer, Task> tasks = new HashMap<>();
+    private HashMap<Integer, Task> tasks = new HashMap<>();
+    // Ответ такой же как и в EpicManager.
 
-    public Task taskMaker(String name, String description, String status) {
+    public Task taskMaker(String name, String description, Status status) {
         return new Task(name, description, status);
     }
 
@@ -21,9 +23,7 @@ public class TaskManager {
             for (int id : tasks.keySet()) {
                 Task task = tasks.get(id);
                 System.out.println("Идентификатор " + id);
-                System.out.println("Задача: " + task.getName());
-                System.out.println("Описание: " + task.getDescription());
-                System.out.println("Статус: " + task.getStatus());
+                System.out.println(task);
             }
         }
     }
@@ -31,9 +31,7 @@ public class TaskManager {
     public void taskGetById(int number) {
         if (tasks.containsKey(number)){
         Task task = tasks.get(number);
-        System.out.println("Задача: " + task.getName());
-        System.out.println("Описание: " + task.getDescription());
-        System.out.println("Статус: " + task.getStatus());
+            System.out.println(task);
 
         }else {
             System.out.println("Такой задачи не существует");
