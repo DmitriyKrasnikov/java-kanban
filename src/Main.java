@@ -23,7 +23,7 @@ public class Main {
     public static void main(String[] args) {
         //На этот раз комментарии в коде.
         //Все замечания устранил, за исключением создания абстрактного класса для TaskManager и EpicManager и
-        // лямбда - выражений. 
+        // лямбда - выражений.
         System.out.println("Выберите, что хотите сделать:");
         while (true) {
             System.out.println("1 - Получение списка всех задач.");
@@ -67,10 +67,6 @@ public class Main {
 
             }
         }
-    }
-
-    public interface changeStatus{
-
     }
 
     static public void data() {
