@@ -1,5 +1,4 @@
-import Manager.EpicManager;
-import Manager.TaskManager;
+import Manager.*;
 import Tasks.Epic;
 import Tasks.Status;
 import Tasks.Subtask;
@@ -8,8 +7,7 @@ import Tasks.Task;
 import java.util.Scanner;
 
 public class Main {
-    public static TaskManager manager = new TaskManager();
-    public static EpicManager epicManager = new EpicManager();
+    public static TaskManager manager = Managers.getDefault();
     public static Scanner scanner = new Scanner(System.in);
 
     public static int taskId = 1000;
@@ -21,9 +19,8 @@ public class Main {
     public static Status status;
 
     public static void main(String[] args) {
-        //На этот раз комментарии в коде.
-        //Все замечания устранил, за исключением создания абстрактного класса для TaskManager и EpicManager и
-        // лямбда - выражений.
+        //На этот раз комментарии в классе Managers
+
         System.out.println("Выберите, что хотите сделать:");
         while (true) {
             System.out.println("1 - Получение списка всех задач.");
@@ -32,7 +29,8 @@ public class Main {
             System.out.println("4 - Создание. Сам объект должен передаваться в качестве параметра.");
             System.out.println("5 - Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра.");
             System.out.println("6 - Удаление по идентификатору.");
-            System.out.println("7 - Выход");
+            System.out.println("7 - Получить историю просмотров");
+            System.out.println("8 - Выход");
             int command = scanner.nextInt();
             switch (command){
                 case 1:
@@ -60,6 +58,9 @@ public class Main {
                     remote();
                     break;
                 case 7:
+                    manager.getHistory();
+                    break;
+                case 8:
                     return;
                 default:
                     System.out.println("Неверная команда");
@@ -103,12 +104,12 @@ public class Main {
                     manager.taskListAllTasks();
                     break;
                 case 2:
-                    epicManager.epicListAllTasks();
+                    manager.epicListAllTasks();
                     break;
                 case 3:
-                    System.out.println("Введите идентефикатор эпика");
+                    System.out.println("Введите идентификатор эпика");
                     number = scanner.nextInt();
-                    epicManager.subtaskListAllTasks(number);
+                    manager.subtaskListAllTasks(number);
                     break;
                 default:
                     System.out.println("Не мороси");
@@ -128,16 +129,16 @@ public class Main {
                     System.out.println("Правильно! Лучше полежать на диване)");
                     break;
                 case 2:
-                    epicManager.epicDeleteAll();
+                    manager.epicDeleteAll();
                     System.out.println("Если проблема решаема,то не стоит о ней беспокоиться.\n " +
                             "Если проблема нерешаема, то не стоит беспокоиться тем более");
                     break;
                 case 3:
-                    System.out.println("Введите идентефикатор эпика");
+                    System.out.println("Введите идентификатор эпика");
                     number = scanner.nextInt();
-                    epicManager.subtaskDeleteAll(number);
+                    manager.subtaskDeleteAll(number);
                     System.out.println("Нет смысла иметь подзадачи, когда эпик сам, как подзадача");
-                    epicManager.takeEpicStatus(number);
+                    manager.takeEpicStatus(number);
                     break;
                 default:
                     System.out.println("Не мороси");
@@ -145,6 +146,7 @@ public class Main {
             }
         }
     }
+
     static public void getter(){
         while (true) {
             System.out.println("Выберите из какого списка вы хотите получить\n 1 - Задачи\n 2 - Эпики\n 3 - Подзадачи\n 4 - Выход");
@@ -157,12 +159,12 @@ public class Main {
                     manager.taskGetById(idNumber);
                     break;
                 case 2:
-                    epicManager.epicGetById(idNumber);
+                    manager.epicGetById(idNumber);
                     break;
                 case 3:
-                    System.out.println("Введите идентефикатор эпика");
+                    System.out.println("Введите идентификатор эпика");
                     number = scanner.nextInt();
-                    epicManager.subtaskGetById(number, idNumber);
+                    manager.subtaskGetById(number, idNumber);
                     break;
                 default:
                     System.out.println("Не мороси");
@@ -181,27 +183,27 @@ public class Main {
                     data();
                 Task task = manager.taskMaker(name,description,status);
                     taskId+=1;
-                manager.taskAdd(taskId,task);
+                    manager.taskAdd(taskId,task);
                     break;
                 case 2:
                     data();
                     epicId+=1;
-                    Epic epic = epicManager.epicMaker(epicId,name,description);
-                    epicManager.epicAdd(epicId,epic);
-                    epicManager.takeEpicStatus(epicId);
+                    Epic epic = manager.epicMaker(epicId,name,description);
+                    manager.epicAdd(epicId,epic);
+                    manager.takeEpicStatus(epicId);
                     break;
                 case 3:
-                    System.out.println("Введите идентефикатор эпика");
+                    System.out.println("Введите идентификатор эпика");
                     number = scanner.nextInt();
-                    if(epicManager.checkEpicsHashMap(number)){
+                    if(manager.checkEpicsHashMap(number)){
                         System.out.println("Такого эпика не существует");
                         break;
                     }
                     data();
-                    Subtask subtask = epicManager.subtaskMaker(name,description,status);
+                    Subtask subtask = manager.subtaskMaker(name,description,status);
                     subTaskId+=1;
-                    epicManager.subtaskAdd(subTaskId,number,subtask);
-                    epicManager.takeEpicStatus(number);
+                    manager.subtaskAdd(subTaskId,number,subtask);
+                    manager.takeEpicStatus(number);
                     break;
                 default:
                     System.out.println("Не мороси");
@@ -225,17 +227,17 @@ public class Main {
                     break;
                 case 2:
                     data();
-                    Epic epic = epicManager.epicMaker(idNumber,name,description);
-                    epicManager.epicUpdate(epic,idNumber);
-                    epicManager.takeEpicStatus(idNumber);
+                    Epic epic = manager.epicMaker(idNumber,name,description);
+                    manager.epicUpdate(epic,idNumber);
+                    manager.takeEpicStatus(idNumber);
                     break;
                 case 3:
-                    System.out.println("Введите идентефикатор эпика");
+                    System.out.println("Введите идентификатор эпика");
                     number = scanner.nextInt();
                     data();
-                    Subtask subtask = epicManager.subtaskMaker(name,description,status);
-                    epicManager.subtaskUpdate(subtask, number, idNumber);
-                    epicManager.takeEpicStatus(number);
+                    Subtask subtask = manager.subtaskMaker(name,description,status);
+                    manager.subtaskUpdate(subtask, number, idNumber);
+                    manager.takeEpicStatus(number);
                     break;
                 default:
                     System.out.println("Не мороси");
@@ -256,13 +258,13 @@ public class Main {
                     manager.taskRemove(idNumber);
                     break;
                 case 2:
-                    epicManager.epicRemove(idNumber);
+                    manager.epicRemove(idNumber);
                     break;
                 case 3:
-                    System.out.println("Введите идентефикатор эпика");
+                    System.out.println("Введите идентификатор эпика");
                     number = scanner.nextInt();
-                    epicManager.subtaskRemove(number, idNumber);
-                    epicManager.takeEpicStatus(number);
+                    manager.subtaskRemove(number, idNumber);
+                    manager.takeEpicStatus(number);
                     break;
                 default:
                     System.out.println("Не мороси");

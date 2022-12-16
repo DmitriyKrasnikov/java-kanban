@@ -1,19 +1,86 @@
 package Manager;
-import Tasks.Epic;
+
 import Tasks.Status;
+import Tasks.Task;
+import Tasks.Epic;
 import Tasks.Subtask;
 
 import java.util.HashMap;
-/*Я не стал создавать абстрактный класс, для того, чтобы наследовать от него TaskManager и EpicManager. Потому что в
-классе EpicManager определены практически одинаковые методы для объектов Epic и SubTask. Поэтому пришлось бы
-переопределять один метод два раза, и тогда непонятно на какой метод ссылаться. Я решил попробовать сделать через
-вложенный класс, но тогда нет доступа к нестатичной таблице epics. Поэтому оставил как есть. Думаю, конкретно в этом
-случае это роли не играет.*/
-public class EpicManager {
-    private HashMap<Integer, Epic> epics = new HashMap<>();
-    //Для начала поставил public, чтобы не путаться. Потом просто забыл поменять. Здесь подойдет модификатор private.
-    // Так как, работа с таблицей ведется только с помощью методов класса EpicManager.
+import java.util.List;
 
+public class InMemoryTaskManager implements TaskManager{
+    private final HashMap<Integer, Task> tasks = new HashMap<>();
+    private final HashMap<Integer, Epic> epics = new HashMap<>();
+
+    HistoryManager historyManager = Managers.getDefaultHistory();
+
+    @Override
+    public void getHistory(){
+         List<Task> historyList = historyManager.getHistory();
+        if(!(historyList.isEmpty())) {
+            for (Task list : historyList)
+                System.out.println(list);
+        } else{
+            System.out.println("Вы еще не просматривали никаких задач");
+        }
+    }
+
+    @Override
+    public Task taskMaker(String name, String description, Status status) {
+        return new Task(name, description, status);
+    }
+
+    @Override
+    public void taskAdd(int id, Task task) {
+        tasks.put(id, task);
+    }
+
+    @Override
+    public void taskListAllTasks() {
+        if ((tasks.isEmpty())){
+            System.out.println("Задач нет");
+        }else {
+            for (int id : tasks.keySet()) {
+                Task task = tasks.get(id);
+                System.out.println("Идентификатор " + id);
+                System.out.println(task);
+            }
+        }
+    }
+
+    @Override
+    public void taskGetById(int number) {
+        if (tasks.containsKey(number)){
+        Task task = tasks.get(number);
+        historyManager.add(task);
+            System.out.println(task);
+
+        }else {
+            System.out.println("Такой задачи не существует");
+        }
+    }
+
+    @Override
+    public void taskRemove(int number) {
+        if (tasks.containsKey(number)) {
+            tasks.remove(number);
+        }else {
+            System.out.println("Такой задачи не существует");
+        }
+    }
+
+    @Override
+    public void taskDeleteAll() {
+        tasks.clear();
+    }
+
+    @Override
+    public void taskUpdate(Task task, int number) {
+        tasks.remove(number);
+        tasks.put(number, task);
+    }
+
+    @Override
     public Epic epicMaker(int id, String name, String description) {
         HashMap<Integer, Subtask> subtasks = new HashMap<>();
         if (epics.containsKey(id)) {
@@ -22,14 +89,17 @@ public class EpicManager {
         return new Epic(name, description, Status.NEW, subtasks);
     }
 
+    @Override
     public Subtask subtaskMaker(String name, String description, Status status) {
         return new Subtask(name, description, status);
     }
 
+    @Override
     public void epicAdd(int id, Epic epic) {
         epics.put(id, epic);
     }
 
+    @Override
     public void subtaskAdd(int id, int number, Subtask subtask) {
         if (checkEpicsHashMap(number)) {
             System.out.println("Такого эпика не существует");
@@ -38,6 +108,7 @@ public class EpicManager {
         }
     }
 
+    @Override
     public void epicListAllTasks() {
         if ((epics.isEmpty())){
             System.out.println("Эпиков нет");
@@ -50,11 +121,12 @@ public class EpicManager {
         }
     }
 
+    @Override
     public void subtaskListAllTasks(int number) {
         if (checkEpicsHashMap(number)){
             System.out.println("Такого эпика не существует, подзадач соответственно тоже");
         }else {
-                Epic epic = epics.get(number);
+            Epic epic = epics.get(number);
             if (!(epic.subtasks.isEmpty())) {
                 for (int id : epic.subtasks.keySet()) {
                     Subtask subtask = epic.subtasks.get(id);
@@ -67,10 +139,12 @@ public class EpicManager {
         }
     }
 
+    @Override
     public void epicDeleteAll() {
         epics.clear();
     }
 
+    @Override
     public void subtaskDeleteAll(int number) {
         if (epics.containsKey(number)) {
             Epic epic = epics.get(number);
@@ -80,6 +154,7 @@ public class EpicManager {
         }
     }
 
+    @Override
     public void epicGetById(int number) {
         if (epics.containsKey(number)) {
             Epic epic = epics.get(number);
@@ -90,6 +165,7 @@ public class EpicManager {
 
     }
 
+    @Override
     public void subtaskGetById(int number1, int number2) {
         if (epics.containsKey(number1)) {
             Epic epic = epics.get(number1);
@@ -104,11 +180,13 @@ public class EpicManager {
         }
     }
 
+    @Override
     public void epicUpdate(Epic epic, int number) {
         epics.remove(number);
         epics.put(number, epic);
     }
 
+    @Override
     public void subtaskUpdate(Subtask subtask, int epicNumber, int subtaskNumber) {
         if (checkEpicsHashMap(epicNumber)){
             System.out.println("Такого эпика не существует");
@@ -123,6 +201,7 @@ public class EpicManager {
         }
     }
 
+    @Override
     public void epicRemove(int number) {
         if (epics.containsKey(number)) {
             epics.remove(number);
@@ -131,6 +210,7 @@ public class EpicManager {
         }
     }
 
+    @Override
     public void subtaskRemove(int epicNumber, int subtaskNumber) {
         if (epics.containsKey(epicNumber)) {
             Epic epic = epics.get(epicNumber);
@@ -143,38 +223,42 @@ public class EpicManager {
         }
     }
 
+    @Override
     public void takeEpicStatus(int number) {
         if(checkEpicsHashMap(number)){
             System.out.println("Такого эпика не существует");
         }else{
-        Epic epic = epics.get(number);
-        String statusNew = "";
-        String statusDone = "";
-        String statusInProgress = "";
-        if (epic.subtasks.isEmpty()){
-            statusNew = "NEW";
-        }
-        for (Subtask subtask : epic.subtasks.values()) {
-            if ((subtask.getStatus()).equals(Status.NEW)) {
+            Epic epic = epics.get(number);
+            String statusNew = "";
+            String statusDone = "";
+            String statusInProgress = "";
+            if (epic.subtasks.isEmpty()){
                 statusNew = "NEW";
-            } else if ((subtask.getStatus()).equals(Status.DONE)) {
-                statusDone = "DONE";
-            } else {
-                statusInProgress = "IN_PROGRESS";
             }
-        }
+            for (Subtask subtask : epic.subtasks.values()) {
+                if ((subtask.getStatus()).equals(Status.NEW)) {
+                    statusNew = "NEW";
+                } else if ((subtask.getStatus()).equals(Status.DONE)) {
+                    statusDone = "DONE";
+                } else {
+                    statusInProgress = "IN_PROGRESS";
+                }
+            }
 
-        if (((statusNew).equals("NEW")) && ((statusDone).equals("")) && ((statusInProgress).equals(""))) {
-            epic.setStatus(Status.NEW);
-        } else if (((statusNew).equals("")) && ((statusDone).equals("DONE")) && (statusInProgress.equals(""))) {
-            epic.setStatus(Status.DONE);
-        } else {
-            epic.setStatus(Status.IN_PROGRESS);
-        }
+            if (((statusNew).equals("NEW")) && ((statusDone).equals("")) && ((statusInProgress).equals(""))) {
+                epic.setStatus(Status.NEW);
+            } else if (((statusNew).equals("")) && ((statusDone).equals("DONE")) && (statusInProgress.equals(""))) {
+                epic.setStatus(Status.DONE);
+            } else {
+                epic.setStatus(Status.IN_PROGRESS);
+            }
         }
     }
 
+    @Override
     public boolean checkEpicsHashMap(int number) {
         return epics.isEmpty() || !(epics.containsKey(number));
     }
 }
+
+

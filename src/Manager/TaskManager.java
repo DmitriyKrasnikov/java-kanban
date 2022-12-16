@@ -1,58 +1,56 @@
 package Manager;
+import Tasks.Epic;
 import Tasks.Status;
+import Tasks.Subtask;
 import Tasks.Task;
 
-import java.util.HashMap;
+public interface TaskManager  {
 
-public class TaskManager {
-    private HashMap<Integer, Task> tasks = new HashMap<>();
-    // Ответ такой же как и в EpicManager.
+    void getHistory();
 
-    public Task taskMaker(String name, String description, Status status) {
-        return new Task(name, description, status);
-    }
+    Task taskMaker(String name, String description, Status status);
 
-    public void taskAdd(int id, Task task) {
-        tasks.put(id, task);
-    }
+    void taskAdd (int id, Task task);
 
-    public void taskListAllTasks() {
-        if ((tasks.isEmpty())){
-            System.out.println("Задач нет");
-        }else {
-            for (int id : tasks.keySet()) {
-                Task task = tasks.get(id);
-                System.out.println("Идентификатор " + id);
-                System.out.println(task);
-            }
-        }
-    }
+    void taskListAllTasks();
 
-    public void taskGetById(int number) {
-        if (tasks.containsKey(number)){
-        Task task = tasks.get(number);
-            System.out.println(task);
+    void taskGetById(int number);
 
-        }else {
-            System.out.println("Такой задачи не существует");
-        }
-    }
+    void taskRemove(int number);
 
-    public void taskRemove(int number) {
-        if (tasks.containsKey(number)) {
-            tasks.remove(number);
-        }else {
-            System.out.println("Такой задачи не существует");
-        }
-    }
+    void taskDeleteAll();
 
-    public void taskDeleteAll() {
-        tasks.clear();
-    }
+    void taskUpdate(Task task, int number);
 
-    public void taskUpdate(Task task, int number) {
-        tasks.remove(number);
-        tasks.put(number, task);
-    }
+    Epic epicMaker(int id, String name, String description);
+
+    Subtask subtaskMaker(String name, String description, Status status);
+
+    void epicAdd(int id, Epic epic);
+
+    void subtaskAdd(int id, int number, Subtask subtask);
+
+    void epicListAllTasks();
+
+    void subtaskListAllTasks(int number);
+
+    void epicDeleteAll();
+
+    void subtaskDeleteAll(int number);
+
+    void epicGetById(int number);
+
+    void subtaskGetById(int number1, int number2);
+
+    void epicUpdate(Epic epic, int number);
+
+    void subtaskUpdate(Subtask subtask, int epicNumber, int subtaskNumber);
+
+    void epicRemove(int number);
+
+    void subtaskRemove(int epicNumber, int subtaskNumber);
+
+    void takeEpicStatus(int number);
+
+    boolean checkEpicsHashMap(int number);
 }
-
