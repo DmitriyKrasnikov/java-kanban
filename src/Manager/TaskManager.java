@@ -4,9 +4,11 @@ import Tasks.Status;
 import Tasks.Subtask;
 import Tasks.Task;
 
+import java.util.List;
+
 public interface TaskManager  {
 
-    void getHistory();
+    List<Task> getHistory();
 
     Task taskMaker(String name, String description, Status status);
 

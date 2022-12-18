@@ -4,22 +4,26 @@ import Tasks.Status;
 import Tasks.Subtask;
 import Tasks.Task;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-    public static TaskManager manager = Managers.getDefault();
-    public static Scanner scanner = new Scanner(System.in);
+    //Как с тобой связаться в пачке?)
+    /*1.	По поводу модификаторов доступа. Я всегда сначала ставлю public, а потом при необходимости,
+    меняю на private. Похоже это неправильная стратегия)
+    Как я понял логика такая: все, к чему не нужно давать доступ – скрываем.*/
+    private static final TaskManager manager = Managers.getDefault();
+    private static final Scanner scanner = new Scanner(System.in);
 
-    public static int taskId = 1000;
-    public static int epicId = 2000;
-    public static int subTaskId = 3000;
-    public static int number = 0;
-    public static String name = "";
-    public static String description = "";
-    public static Status status;
+    private static int taskId = 1000;
+    private static int epicId = 2000;
+    private static int subTaskId = 3000;
+    private static int number = 0;
+    private static String name = "";
+    private static String description = "";
+    private static Status status;
 
     public static void main(String[] args) {
-        //На этот раз комментарии в классе Managers
 
         System.out.println("Выберите, что хотите сделать:");
         while (true) {
@@ -58,7 +62,8 @@ public class Main {
                     remote();
                     break;
                 case 7:
-                    manager.getHistory();
+                    //Получение истории просмотров
+                    showHistory();
                     break;
                 case 8:
                     return;
@@ -70,6 +75,12 @@ public class Main {
         }
     }
 
+    static public void showHistory(){
+        List<Task> history = manager.getHistory();
+        for (Task task : history){
+            System.out.println(task);
+        }
+    }
     static public void data() {
         System.out.println("Введите название задачи");
         name = scanner.nextLine();
@@ -78,7 +89,7 @@ public class Main {
         description = scanner.nextLine();
             System.out.println("Выберите статус задачи\n 1 - NEW\n 2 - IN_PROGRESS\n 3 - DONE");
             int statusNumber = scanner.nextInt();
-            switch (statusNumber) {//Лямбда - выражения я понял в общих чертах, но как применить их здесь я не придумал.
+            switch (statusNumber) {
                 case 1:
                     status = Status.NEW;
                     break;
@@ -193,6 +204,7 @@ public class Main {
                     manager.takeEpicStatus(epicId);
                     break;
                 case 3:
+                    manager.epicListAllTasks();
                     System.out.println("Введите идентификатор эпика");
                     number = scanner.nextInt();
                     if(manager.checkEpicsHashMap(number)){
@@ -272,6 +284,4 @@ public class Main {
             }
         }
     }
-
-
 }

@@ -12,18 +12,13 @@ public class InMemoryTaskManager implements TaskManager{
     private final HashMap<Integer, Task> tasks = new HashMap<>();
     private final HashMap<Integer, Epic> epics = new HashMap<>();
 
-    HistoryManager historyManager = Managers.getDefaultHistory();
+    private final HistoryManager historyManager = Managers.getDefaultHistory();
 
     @Override
-    public void getHistory(){
-         List<Task> historyList = historyManager.getHistory();
-        if(!(historyList.isEmpty())) {
-            for (Task list : historyList)
-                System.out.println(list);
-        } else{
-            System.out.println("Вы еще не просматривали никаких задач");
-        }
+    public List<Task> getHistory(){
+        return historyManager.getHistory();
     }
+    //1. По поводу метода getHistory() немного не понял. Логику прописал в Main.
 
     @Override
     public Task taskMaker(String name, String description, Status status) {
@@ -159,6 +154,7 @@ public class InMemoryTaskManager implements TaskManager{
         if (epics.containsKey(number)) {
             Epic epic = epics.get(number);
             System.out.println(epic);
+            historyManager.add(epic);
         }else {
             System.out.println("Такого эпика не существует");
         }
@@ -172,6 +168,7 @@ public class InMemoryTaskManager implements TaskManager{
             if (epic.subtasks.containsKey(number2)) {
                 Subtask subtask = epic.subtasks.get(number2);
                 System.out.println(subtask);
+                historyManager.add(subtask);
             }else {
                 System.out.println("Такой подзадачи не существует");
             }
