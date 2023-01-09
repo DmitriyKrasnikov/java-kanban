@@ -18,7 +18,6 @@ public class InMemoryTaskManager implements TaskManager{
     public List<Task> getHistory(){
         return historyManager.getHistory();
     }
-    //1. По поводу метода getHistory() немного не понял. Логику прописал в Main.
 
     @Override
     public Task taskMaker(String name, String description, Status status) {
@@ -47,7 +46,7 @@ public class InMemoryTaskManager implements TaskManager{
     public void taskGetById(int number) {
         if (tasks.containsKey(number)){
         Task task = tasks.get(number);
-        historyManager.add(task);
+        historyManager.add(number,task);
             System.out.println(task);
 
         }else {
@@ -154,7 +153,7 @@ public class InMemoryTaskManager implements TaskManager{
         if (epics.containsKey(number)) {
             Epic epic = epics.get(number);
             System.out.println(epic);
-            historyManager.add(epic);
+            historyManager.add(number,epic);
         }else {
             System.out.println("Такого эпика не существует");
         }
@@ -168,7 +167,7 @@ public class InMemoryTaskManager implements TaskManager{
             if (epic.subtasks.containsKey(number2)) {
                 Subtask subtask = epic.subtasks.get(number2);
                 System.out.println(subtask);
-                historyManager.add(subtask);
+                historyManager.add(number2,subtask);
             }else {
                 System.out.println("Такой подзадачи не существует");
             }

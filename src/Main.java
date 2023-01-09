@@ -8,10 +8,6 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-    //Как с тобой связаться в пачке?)
-    /*1.	По поводу модификаторов доступа. Я всегда сначала ставлю public, а потом при необходимости,
-    меняю на private. Похоже это неправильная стратегия)
-    Как я понял логика такая: все, к чему не нужно давать доступ – скрываем.*/
     private static final TaskManager manager = Managers.getDefault();
     private static final Scanner scanner = new Scanner(System.in);
 
@@ -50,7 +46,7 @@ public class Main {
                     getter();
                     break;
                 case 4:
-                    //Создание. Сам объект должен передаваться в качестве параметра.
+                    //Создание.
                     maker();
                     break;
                 case 5:
@@ -75,13 +71,13 @@ public class Main {
         }
     }
 
-    static public void showHistory(){
+    static private void showHistory(){
         List<Task> history = manager.getHistory();
         for (Task task : history){
             System.out.println(task);
         }
     }
-    static public void data() {
+    static private void data() {
         System.out.println("Введите название задачи");
         name = scanner.nextLine();
         if(name.equals("")){name = scanner.nextLine();}
@@ -105,7 +101,7 @@ public class Main {
             }
     }
 
-    static public void taskList(){
+    static private void taskList(){
         while (true) {
             System.out.println("Выберите какой список вы хотите получить\n 1 - Задачи\n 2 - Эпики\n 3 - Подзадачи\n 4 - Выход");
             int taskListNumber = scanner.nextInt();
@@ -129,7 +125,7 @@ public class Main {
         }
     }
 
-    static public void taskAnnihilator(){
+    static private void taskAnnihilator(){
         while (true) {
             System.out.println("Выберите какой список вы хотите удалить\n 1 - Задачи\n 2 - Эпики\n 3 - Подзадачи\n 4 - Выход");
             int taskAnnihilatorNumber = scanner.nextInt();
@@ -158,7 +154,7 @@ public class Main {
         }
     }
 
-    static public void getter(){
+    static private void getter(){
         while (true) {
             System.out.println("Выберите из какого списка вы хотите получить\n 1 - Задачи\n 2 - Эпики\n 3 - Подзадачи\n 4 - Выход");
             int getterNumber = scanner.nextInt();
@@ -184,7 +180,7 @@ public class Main {
         }
     }
 
-    static public void maker(){
+    static private void maker(){
         while (true) {
             System.out.println("Выберите что вы хотите добавить\n 1 - Задачи\n 2 - Эпики\n 3 - Подзадачи\n 4 - Выход");
             int makerNumber = scanner.nextInt();
@@ -224,7 +220,7 @@ public class Main {
         }
     }
 
-    static public void update(){
+    static private void update(){
         while (true) {
             System.out.println("Выберите что вы хотите обновить\n 1 - Задачи\n 2 - Эпики\n 3 - Подзадачи\n 4 - Выход");
             int makerNumber = scanner.nextInt();
@@ -258,7 +254,7 @@ public class Main {
         }
     }
 
-    static public void remote(){
+    static private void remote(){
         while (true) {
             System.out.println("Выберите что вы хотите удалить\n 1 - Задачи\n 2 - Эпики\n 3 - Подзадачи\n 4 - Выход");
             int makerNumber = scanner.nextInt();

@@ -3,32 +3,74 @@ package Manager;
 import Tasks.Task;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager{
-    private final List<Task> historyList = new ArrayList<>();
+
+    private Node<Task> head;
+    private Node<Task> tail;
+    private final HashMap<Integer,Node<Task>> historyList = new HashMap<>();
+
+
     @Override
-    public void add(Task task){
+    public void add(int id,Task task){
         if (task!= null) {
-            historyList.add(task);
-            if (historyList.size() > 10) {
-                historyList.remove(0);
+            remove(id);
+            linkLast(id,task);
+        }
+    }
+
+    @Override
+    public void remove(int id){
+        removeNode(historyList.get(id));
+    }
+
+    @Override
+    public List<Task> getHistory(){
+        return getTasks();
+    }
+    private void linkLast(int id,Task element) {
+        final Node<Task> oldTail = tail;
+        final Node<Task> newNode = new Node<>(oldTail, element, null);
+            tail = newNode;
+            historyList.put(id,tail);
+            if (oldTail == null)
+                head = newNode;
+            else
+                oldTail.next = newNode;
+        }
+    private List<Task> getTasks() {
+        List<Task> tasks = new ArrayList<>();
+        Node<Task> node = head;
+        while (node != null){
+            tasks.add(node.data);
+            node = node.next;
+        }
+        return tasks;
+    }
+
+    private void removeNode(Node<Task> curNode){
+        if(curNode != null){
+            Node<Task> prev = curNode.prev;
+            Node<Task> next = curNode.next;
+            curNode.data = null;
+
+            if (head == curNode && tail == curNode) {
+                head = null;
+                tail = null;
+            } else if (head == curNode) {
+                head = next;
+                head.prev = null;
+            } else if (tail == curNode) {
+                tail = prev;
+                tail.next = null;
+            } else {
+                prev.next = next;
+                next.prev = prev;
             }
         }
     }
-    @Override
-    public List<Task> getHistory(){
-        return historyList;
     }
 
-}
-
-/*1.	ArrayList выбрал для реализации, просто потому что пользовался им, и он сюда подходит.
-2.	Static в 9 и 10 строчке был для того, чтобы в случае создания нескольких объектов данного класса,
-намеренно или по ошибке, сам список оставался прежним. Если будет несколько объектов, то и списки будут разные.
-Но если понадобится, чтобы было несколько списков, то модификаторы будут не нужны. Так что всё зависит от задачи.
-3.	То, как используется метод add(Task task) исключает возможность передачи в аргумент task = null, так как он
-вызывается в методе GetById(int number) класса InMemoryTaskManager в том случае, если список задач не пустой.
-Но проверку я добавил.
-4.	Метод добавления задач в список переписал, спасибо.*/
 
