@@ -58,6 +58,7 @@ public class InMemoryTaskManager implements TaskManager{
     public void taskRemove(int number) {
         if (tasks.containsKey(number)) {
             tasks.remove(number);
+            historyManager.remove(number);
         }else {
             System.out.println("Такой задачи не существует");
         }
@@ -200,6 +201,11 @@ public class InMemoryTaskManager implements TaskManager{
     @Override
     public void epicRemove(int number) {
         if (epics.containsKey(number)) {
+            Epic epic = epics.get(number);
+            for (Integer subtaskNumber : epic.subtasks.keySet()){
+                historyManager.remove(subtaskNumber);
+            }
+            historyManager.remove(number);
             epics.remove(number);
         }else {
             System.out.println("Такого эпика не существует");
@@ -212,6 +218,7 @@ public class InMemoryTaskManager implements TaskManager{
             Epic epic = epics.get(epicNumber);
             if (epic.subtasks.containsKey(subtaskNumber)){
                 epic.subtasks.remove(subtaskNumber);
+                historyManager.remove(subtaskNumber);
             }else {
                 System.out.println("Такой подзадачи не существует");
             }}else{

@@ -6,52 +6,54 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class InMemoryHistoryManager implements HistoryManager{
+public class InMemoryHistoryManager implements HistoryManager {
 
     private Node<Task> head;
     private Node<Task> tail;
-    private final HashMap<Integer,Node<Task>> historyList = new HashMap<>();
+    private final HashMap<Integer, Node<Task>> historyList = new HashMap<>();
 
 
     @Override
-    public void add(int id,Task task){
-        if (task!= null) {
+    public void add(int id, Task task) {
+        if (task != null) {
             remove(id);
-            linkLast(id,task);
+            linkLast(id, task);
         }
     }
 
     @Override
-    public void remove(int id){
+    public void remove(int id) {
         removeNode(historyList.get(id));
     }
 
     @Override
-    public List<Task> getHistory(){
+    public List<Task> getHistory() {
         return getTasks();
     }
-    private void linkLast(int id,Task element) {
+
+    private void linkLast(int id, Task element) {
         final Node<Task> oldTail = tail;
         final Node<Task> newNode = new Node<>(oldTail, element, null);
-            tail = newNode;
-            historyList.put(id,tail);
-            if (oldTail == null)
-                head = newNode;
-            else
-                oldTail.next = newNode;
-        }
+        tail = newNode;
+        historyList.put(id, tail);
+        if (oldTail == null)
+            head = newNode;
+        else
+            oldTail.next = newNode;
+    }
+
     private List<Task> getTasks() {
         List<Task> tasks = new ArrayList<>();
         Node<Task> node = head;
-        while (node != null){
+        while (node != null) {
             tasks.add(node.data);
             node = node.next;
         }
         return tasks;
     }
 
-    private void removeNode(Node<Task> curNode){
-        if(curNode != null){
+    private void removeNode(Node<Task> curNode) {
+        if (curNode != null) {
             Node<Task> prev = curNode.prev;
             Node<Task> next = curNode.next;
             curNode.data = null;
@@ -71,6 +73,6 @@ public class InMemoryHistoryManager implements HistoryManager{
             }
         }
     }
-    }
+}
 
 
