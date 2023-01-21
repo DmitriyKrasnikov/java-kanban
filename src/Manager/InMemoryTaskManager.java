@@ -129,9 +129,9 @@ public class InMemoryTaskManager implements TaskManager{
                     System.out.println("Идентификатор " + id);
                     System.out.println(subtask);
                 }
-            }else {
+            }/*else {
                 System.out.println("Такой подзадачи не существует, или эпик не содержит подзадач");
-            }
+            }*/
         }
     }
 

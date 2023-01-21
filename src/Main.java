@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-    //Удаление задачи из списка просмотренных, при удалении ее из списка задач, не прописал просто из-за невнимательного
-    // прочтения тз. Сейчас всё исправил.
     private static final TaskManager manager = Managers.getDefault();
     private static final Scanner scanner = new Scanner(System.in);
 

@@ -14,8 +14,8 @@ import java.util.List;
 
 import static java.lang.Integer.parseInt;
 
-//Возможно, можно было бы реализовать всё проще. И я не понял, почему в тз в подсказках методы статичные.
-// Я не вижу разницы в данном случае. Но сделал, как написано.
+//Насчет статичных методов, я разницу понимаю. Не понимаю зачем конкретно в данном случае их делать статичными.
+// Мне, кажется в этом случае разницы нет.
 public class FileBackedTasksManager extends InMemoryTaskManager {
     File file;
 
@@ -30,8 +30,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     //Методы для сохранения в файл
 
     //save() сохраняет текущее состояние файла. В тз требуется добавить его в каждый модифицирующий метод родителя,
-    // но в моем случае, мне кажется его лучше добавить в класс Main в пункт "выход". Чтобы состояние сохранялось
-    // при выходе, а не во время вызова каждого модифицирующего метода, тем самым увеличивая время работы программы.
+    // "Увеличение времени за счет большего количества обращений к "внешнему" хранилищу (у тебя один при "выходе",
+    // а там каждый раз при модификации)?" - да
     private void save() {
         //Проходим спискам задач Task и Epic, собираем в одну мапу
         HashMap<Integer, Task> allTasks = new HashMap<>();
@@ -47,7 +47,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             fileWriter.write("id,type,name,status,description,epic" + System.lineSeparator());
 
             // Следующие циклы записаны для того, чтобы задачи в файл записывались по порядку. Сначала Task,
-            // потом Epic со всеми, включенными в него Subtask. Кстати, спасибо за подсказку про Id задач. Очень помогло.
+            // потом Epic со всеми, включенными в него Subtask.
             for (Integer allTaskKey : allTasks.keySet()) {
                 if (allTaskKey < 2000) {
 
@@ -72,10 +72,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             fileWriter.write(System.lineSeparator());
             fileWriter.write(historyToString(super.historyManager, allTasks));
         } catch (IOException e) {
-
-            // Ловится исключение ManagerSaveException(). Как я понял, ясли программа выкидывает непроверяемое исключение,
-            // то прописывать в сигнатурах методов, в которых оно может возникнуть, необязательно. Поэтому в ТЗ стоит
-            // задача на написание собственного непроверяемого исключения. Хотя тут можно было просто поставить RuntimeException
+            e.printStackTrace();
             throw new ManagerSaveException();
         }
 
@@ -142,6 +139,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 }
             }
         } catch (IOException e) {
+            e.printStackTrace();
             throw new ManagerSaveException();
         }
         //Удаление последней строки с историей, пустой разделяющей строки и первой
@@ -174,8 +172,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     //Возвращает задачу из строки. Вызывается в методе recoveryTasks.
-    // В ТЗ в аргументы метод должен принимать строку, но так как задачи у меня не содержат поле id, то отделять id
-    // от строки приходится до вызова метода, соответственно строку разбивать тоже, поэтому в метод передается массив
     private Task fromString(String[] taskToPart) {
         switch (taskToPart[1]) {
             case "TASK":
@@ -211,13 +207,16 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             } else if (super.epics.get(id) != null) {
                 super.historyManager.add(id, super.epics.get(id));
             } else {
+                boolean elementNull = true;
                 for (Integer epicId : super.epics.keySet()) {
                     Epic epic = super.epics.get(epicId);
                     if (epic.subtasks.get(id) != null) {
                         super.historyManager.add(id, epic.subtasks.get(id));
-                    } else {
-                        System.out.println("Не в этот раз, мазафакер");
+                        elementNull = false;
                     }
+                }
+                if (elementNull) {
+                    System.out.println("Не в этот раз, мазафакер");
                 }
             }
         }
@@ -328,29 +327,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
 
     public static void main(String[] args) {
-        File file1 = new File("C:\\Users\\Admin\\PP\\java-kanban\\src\\Task.csv");
+        String filePath = new File("src\\Task.csv").getAbsolutePath();
+        File file1 = new File(filePath);
+
         FileBackedTasksManager fileBackedTasksManager = loadFromFile(file1);
-
-        //Восстановление данных
-        /*
-        {
-            fileBackedTasksManager.recovery();
-
-            fileBackedTasksManager.taskListAllTasks();
-            System.out.println("");
-            fileBackedTasksManager.epicListAllTasks();
-            System.out.println();
-            for (Integer id : fileBackedTasksManager.epics.keySet()) {
-                fileBackedTasksManager.subtaskListAllTasks(id);
-            }
-            System.out.println();
-            List<Task> history = fileBackedTasksManager.getHistory();
-            for (Task task : history) {
-                System.out.println(task);
-            }
-        }*/
-
-        //Запись данных
 
         {
             fileBackedTasksManager.taskAdd(1001, fileBackedTasksManager.
@@ -388,11 +368,48 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             fileBackedTasksManager.subtaskAdd(3006, 2005, fileBackedTasksManager.
                     subtaskMaker("Подзадача6", "Описание подзадачи 6", Status.NEW));
 
-            fileBackedTasksManager.taskGetById(1003);
-            fileBackedTasksManager.epicGetById(2003);
-            fileBackedTasksManager.subtaskGetById(2002, 3004);
-            fileBackedTasksManager.subtaskGetById(2005, 3006);
+
         }
+        System.out.println("1. Все задачи, эпики, подзадачи, которые созданы");
+        fileBackedTasksManager.taskListAllTasks();
+        System.out.println();
+        fileBackedTasksManager.epicListAllTasks();
+        System.out.println();
+        for (Integer id : fileBackedTasksManager.epics.keySet()) {
+            fileBackedTasksManager.subtaskListAllTasks(id);
+        }
+        System.out.println();
+
+        System.out.println("2. Вызвать некоторые из них");
+        fileBackedTasksManager.taskGetById(1003);//Задача10
+        fileBackedTasksManager.epicGetById(2003);//Эпик3
+        fileBackedTasksManager.subtaskGetById(2002, 3004);//Подзадача4
+        fileBackedTasksManager.subtaskGetById(2005, 3006);//Подзадача6
+        System.out.println();
+
+        System.out.println("И вывести порядок.");
+        List<Task> history = fileBackedTasksManager.getHistory();
+        for (Task task : history) {
+            System.out.println(task);
+        }
+        System.out.println();
+
+        System.out.println("3.Вывести информацию, которая записалась в файл, чтобы сравнить ее с полученной ранее.");
+        FileBackedTasksManager recoveryFileBackedTasksManager = new FileBackedTasksManager(file1);
+        recoveryFileBackedTasksManager.recovery();
+
+            recoveryFileBackedTasksManager.taskListAllTasks();
+            System.out.println();
+            recoveryFileBackedTasksManager.epicListAllTasks();
+            System.out.println();
+            for (Integer id : recoveryFileBackedTasksManager.epics.keySet()) {
+                recoveryFileBackedTasksManager.subtaskListAllTasks(id);
+            }
+            System.out.println();
+            List<Task> historyList = recoveryFileBackedTasksManager.getHistory();
+            for (Task task : historyList) {
+                System.out.println(task);
+            }
 
     }
 }

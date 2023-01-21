@@ -1,8 +1,10 @@
 package Tasks;
 
 public class Task {
-    private String name;
-    private String description;
+    //Я понял. Потому что обновление задачи в списке tasks происходит за счет создания нового объекта, а не изменения
+    // полей старого.
+    private final String name;
+    private final String description;
     private Status status;
 
     public Task(String name, String description, Status status) {
