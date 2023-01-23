@@ -14,24 +14,22 @@ import java.util.List;
 
 import static java.lang.Integer.parseInt;
 
-//Насчет статичных методов, я разницу понимаю. Не понимаю зачем конкретно в данном случае их делать статичными.
-// Мне, кажется в этом случае разницы нет.
 public class FileBackedTasksManager extends InMemoryTaskManager {
     File file;
 
-    private FileBackedTasksManager(File file) {
+    public FileBackedTasksManager(){}
+
+    FileBackedTasksManager(File file) {
         this.file = file;
     }
 
-    static protected FileBackedTasksManager loadFromFile(File file) {
+    static public FileBackedTasksManager loadFromFile(File file) {
         return new FileBackedTasksManager(file);
     }
 
     //Методы для сохранения в файл
 
     //save() сохраняет текущее состояние файла. В тз требуется добавить его в каждый модифицирующий метод родителя,
-    // "Увеличение времени за счет большего количества обращений к "внешнему" хранилищу (у тебя один при "выходе",
-    // а там каждый раз при модификации)?" - да
     private void save() {
         //Проходим спискам задач Task и Epic, собираем в одну мапу
         HashMap<Integer, Task> allTasks = new HashMap<>();
@@ -72,8 +70,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             fileWriter.write(System.lineSeparator());
             fileWriter.write(historyToString(super.historyManager, allTasks));
         } catch (IOException e) {
+            throw new ManagerSaveException("Как сейчас сделал, больше так не делай");
+        } catch (ManagerSaveException e){
             e.printStackTrace();
-            throw new ManagerSaveException();
         }
 
     }
@@ -139,8 +138,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 }
             }
         } catch (IOException e) {
+            throw new ManagerSaveException("Как сейчас сделал, больше так не делай");
+        } catch (ManagerSaveException e){
             e.printStackTrace();
-            throw new ManagerSaveException();
         }
         //Удаление последней строки с историей, пустой разделяющей строки и первой
         fileToLine.remove(emptyStr);

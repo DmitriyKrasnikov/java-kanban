@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-    private static final TaskManager manager = Managers.getDefault();
+    private static final TaskManager manager = new InMemoryTaskManager();
     private static final Scanner scanner = new Scanner(System.in);
 
     private static int taskId = 1000;
