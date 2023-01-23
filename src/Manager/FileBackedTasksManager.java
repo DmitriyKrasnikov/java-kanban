@@ -17,8 +17,6 @@ import static java.lang.Integer.parseInt;
 public class FileBackedTasksManager extends InMemoryTaskManager {
     File file;
 
-    public FileBackedTasksManager(){}
-
     FileBackedTasksManager(File file) {
         this.file = file;
     }
