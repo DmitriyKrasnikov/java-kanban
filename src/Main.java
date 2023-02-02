@@ -66,11 +66,9 @@ public class Main {
                 default:
                     System.out.println("Неверная команда");
                     break;
-
             }
         }
     }
-
     static private void showHistory(){
         List<Task> history = manager.getHistory();
         for (Task task : history){

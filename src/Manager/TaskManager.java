@@ -1,18 +1,27 @@
 package Manager;
+
 import Tasks.Epic;
 import Tasks.Status;
 import Tasks.Subtask;
 import Tasks.Task;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.TreeSet;
 
-public interface TaskManager  {
+public interface TaskManager {
+
+    TreeSet<Task> getPrioritizedTasks();
+
+    HashMap<Integer, Task> taskHashMap();
+
+    HashMap<Integer, Epic> epicHashMap();
 
     List<Task> getHistory();
 
     Task taskMaker(String name, String description, Status status);
 
-    void taskAdd (int id, Task task);
+    void taskAdd(int id, Task task);
 
     void taskListAllTasks();
 
