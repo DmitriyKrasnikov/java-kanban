@@ -9,6 +9,7 @@ import java.util.HashMap;
 
 public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager> {
 
+    //У меня тест проходит. Причину, по которой не проходит у тебя, не знаю.
     static File file = new File("test\\TaskTest.csv");
 
     @BeforeEach

@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 
@@ -29,8 +31,10 @@ public class HistoryManagerTest {
         Task task = new Task("Task", "TaskDescription", Status.NEW);
         HashMap<Integer, Subtask> subtasks = new HashMap<>();
         Epic epic = new Epic("Epic", "EpicDescription", Status.NEW, subtasks);
-        Subtask subtask1 = new Subtask("Subtask1", "Subtask1Description", Status.NEW);
-        Subtask subtask2 = new Subtask("Subtask2", "Subtask2Description", Status.NEW);
+        Subtask subtask1 = new Subtask("Subtask1", "Subtask1Description", Status.NEW,
+                Duration.ofMinutes(48), LocalDateTime.of(2023, 1, 12, 15, 0));
+        Subtask subtask2 = new Subtask("Subtask2", "Subtask2Description", Status.NEW,
+                Duration.ofMinutes(76), LocalDateTime.of(2023, 1, 13, 10, 1));
         epic.subtasks.put(3001, subtask1);
         epic.subtasks.put(3002, subtask2);
         //Дублирование

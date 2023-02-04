@@ -3,17 +3,24 @@ package Tasks;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 public class Task implements Comparable<Task> {
     private final String name;
     private final String description;
     private Status status;
     private Duration duration = Duration.ofMinutes(0);
-    //В тз указано, что время должно представлять из себя день и продолжительность в минутах, то есть неважно когда
-    // задача начинается, отсчет всегда ведется от 00.00. Я, может, неправильно понял, но если я понял правильно, то
-    // мне кажется необходимым добавить полную дату со временем.
     private LocalDateTime startTime = LocalDateTime.of(10000, 1, 1, 1, 1);
 
+    public Task(String name, String description, Status status, Duration duration, LocalDateTime startTime) {
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.duration = duration;
+        this.startTime = startTime;
+    }
+
+    // Этот конструктор сделал для эпиков, так как у них время расчетное
     public Task(String name, String description, Status status) {
         this.name = name;
         this.description = description;
@@ -82,5 +89,18 @@ public class Task implements Comparable<Task> {
             return -1;
         } else
             return 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return name.equals(task.name) && description.equals(task.description) && status == task.status;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, description, status);
     }
 }

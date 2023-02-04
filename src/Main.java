@@ -4,6 +4,8 @@ import Tasks.Status;
 import Tasks.Subtask;
 import Tasks.Task;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Scanner;
 
@@ -186,7 +188,9 @@ public class Main {
             switch (makerNumber) {
                 case 1:
                     data();
-                Task task = manager.taskMaker(name,description,status);
+                    Duration duration = Duration.ofMinutes(0);
+                    LocalDateTime startTime = LocalDateTime.of(10000, 1, 1, 1, 1);
+                Task task = manager.taskMaker(name,description,status, duration, startTime);
                     taskId+=1;
                     manager.taskAdd(taskId,task);
                     break;
@@ -206,7 +210,9 @@ public class Main {
                         break;
                     }
                     data();
-                    Subtask subtask = manager.subtaskMaker(name,description,status);
+                    Duration duration2 = Duration.ofMinutes(0);
+                    LocalDateTime startTime2 = LocalDateTime.of(10000, 1, 1, 1, 1);
+                    Subtask subtask = manager.subtaskMaker(name,description,status, duration2, startTime2);
                     subTaskId+=1;
                     manager.subtaskAdd(subTaskId,number,subtask);
                     manager.takeEpicStatus(number);
@@ -228,7 +234,9 @@ public class Main {
             switch (makerNumber) {
                 case 1:
                     data();
-                    Task task = manager.taskMaker(name,description,status);
+                    Duration duration = Duration.ofMinutes(0);
+                    LocalDateTime startTime = LocalDateTime.of(10000, 1, 1, 1, 1);
+                    Task task = manager.taskMaker(name,description,status, duration, startTime);
                     manager.taskUpdate(task, idNumber);
                     break;
                 case 2:
@@ -241,7 +249,9 @@ public class Main {
                     System.out.println("Введите идентификатор эпика");
                     number = scanner.nextInt();
                     data();
-                    Subtask subtask = manager.subtaskMaker(name,description,status);
+                    Duration duration1 = Duration.ofMinutes(0);
+                    LocalDateTime startTime1 = LocalDateTime.of(10000, 1, 1, 1, 1);
+                    Subtask subtask = manager.subtaskMaker(name,description,status,duration1,startTime1);
                     manager.subtaskUpdate(subtask, number, idNumber);
                     manager.takeEpicStatus(number);
                     break;

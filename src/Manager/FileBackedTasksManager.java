@@ -156,30 +156,16 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     private void recoveryTasks(List<String> fileToLine) {
         for (String taskLine : fileToLine) {
             String[] taskToPart = taskLine.split(",");
-            LocalDateTime localDateTime = LocalDateTime.parse(taskToPart[5]);
-            Duration duration = Duration.ofMinutes(parseLong(taskToPart[6]));
             switch (taskToPart[1]) {
                 case "TASK":
-                    Task task = fromString(taskToPart);
-                    assert task != null;
-                    task.setStartTime(localDateTime);
-                    task.setDuration(duration);
-                    super.tasks.put(parseInt(taskToPart[0]), task);
+                    super.tasks.put(parseInt(taskToPart[0]), fromString(taskToPart));
                     break;
                 case "EPIC":
-                    Epic epic1 = (Epic) fromString(taskToPart);
-                    assert epic1 != null;
-                    epic1.setStartTime(localDateTime);
-                    epic1.setDuration(duration);
-                    super.epics.put(parseInt(taskToPart[0]), epic1);
+                    super.epics.put(parseInt(taskToPart[0]),(Epic) fromString(taskToPart));
                     break;
                 case "SUBTASK":
-                    Epic epic2 = super.epics.get(parseInt(taskToPart[7]));
-                    Subtask subtask = (Subtask) fromString(taskToPart);
-                    assert subtask != null;
-                    subtask.setStartTime(localDateTime);
-                    subtask.setDuration(duration);
-                    epic2.subtasks.put(parseInt(taskToPart[0]), subtask);
+                    Epic epic = super.epics.get(parseInt(taskToPart[7]));
+                    epic.subtasks.put(parseInt(taskToPart[0]), (Subtask) fromString(taskToPart));
                     break;
             }
         }
@@ -189,11 +175,13 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     private Task fromString(String[] taskToPart) {
         switch (taskToPart[1]) {
             case "TASK":
-                return super.taskMaker(taskToPart[2], taskToPart[4], statusFromString(taskToPart[3]));
+                return super.taskMaker(taskToPart[2], taskToPart[4], statusFromString(taskToPart[3]),
+                        Duration.ofMinutes(parseLong(taskToPart[6])), LocalDateTime.parse(taskToPart[5]));
             case "EPIC":
                 return super.epicMaker(parseInt(taskToPart[0]), taskToPart[2], taskToPart[4]);
             case "SUBTASK":
-                return super.subtaskMaker(taskToPart[2], taskToPart[4], statusFromString(taskToPart[3]));
+                return super.subtaskMaker(taskToPart[2], taskToPart[4], statusFromString(taskToPart[3]),
+                        Duration.ofMinutes(parseLong(taskToPart[6])), LocalDateTime.parse(taskToPart[5]));
             default:
                 return null;
         }
@@ -370,15 +358,12 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         Duration duration8 = Duration.ofMinutes(37);
         Duration duration9 = Duration.ofMinutes(38);
 
-        Task task = fileBackedTasksManager.taskMaker("Задача1", "Описание задачи 1", Status.NEW);
-        task.setStartTime(localDateTime1);
-        task.setDuration(duration1);
-        Task task1 = fileBackedTasksManager.taskMaker("Задача2", "Описание задачи 2", Status.NEW);
-        task1.setStartTime(localDateTime2);
-        task1.setDuration(duration2);
-        Task task2 = fileBackedTasksManager.taskMaker("Задача10", "Описание задачи 10", Status.NEW);
-        task2.setStartTime(localDateTime3);
-        task2.setDuration(duration3);
+        Task task = fileBackedTasksManager.taskMaker("Задача1", "Описание задачи 1", Status.NEW,
+                duration1,localDateTime1);
+        Task task1 = fileBackedTasksManager.taskMaker("Задача2", "Описание задачи 2", Status.NEW,
+                duration2,localDateTime2);
+        Task task2 = fileBackedTasksManager.taskMaker("Задача10", "Описание задачи 10", Status.NEW,
+                duration3, localDateTime3);
 
         fileBackedTasksManager.taskAdd(1001, task);
         fileBackedTasksManager.taskAdd(1002, task1);
@@ -392,24 +377,18 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         fileBackedTasksManager.epicAdd(2002, epic1);
         fileBackedTasksManager.epicAdd(2003, epic2);
 
-        Subtask subtask = fileBackedTasksManager.subtaskMaker("Подзадача1", "Описание подзадачи 1", Status.DONE);
-        subtask.setStartTime(localDateTime1);
-        subtask.setDuration(duration4);
-        Subtask subtask1 = fileBackedTasksManager.subtaskMaker("Подзадача2", "Описание подзадачи 2", Status.IN_PROGRESS);
-        subtask1.setStartTime(localDateTime5);
-        subtask1.setDuration(duration5);
-        Subtask subtask2 = fileBackedTasksManager.subtaskMaker("Подзадача3", "Описание подзадачи 3", Status.NEW);
-        subtask2.setStartTime(localDateTime6);
-        subtask2.setDuration(duration6);
-        Subtask subtask3 = fileBackedTasksManager.subtaskMaker("Подзадача4", "Описание подзадачи 4", Status.DONE);
-        subtask3.setStartTime(localDateTime7);
-        subtask3.setDuration(duration7);
-        Subtask subtask4 = fileBackedTasksManager.subtaskMaker("Подзадача5", "Описание подзадачи 5", Status.DONE);
-        subtask4.setStartTime(localDateTime8);
-        subtask4.setDuration(duration8);
-        Subtask subtask5 = fileBackedTasksManager.subtaskMaker("Подзадача6", "Описание подзадачи 6", Status.NEW);
-        subtask5.setStartTime(localDateTime9);
-        subtask5.setDuration(duration9);
+        Subtask subtask = fileBackedTasksManager.subtaskMaker("Подзадача1", "Описание подзадачи 1", Status.DONE,
+                duration4, localDateTime1);
+        Subtask subtask1 = fileBackedTasksManager.subtaskMaker("Подзадача2", "Описание подзадачи 2", Status.IN_PROGRESS,
+                duration5, localDateTime5);
+        Subtask subtask2 = fileBackedTasksManager.subtaskMaker("Подзадача3", "Описание подзадачи 3", Status.NEW,
+                duration6,localDateTime6);
+        Subtask subtask3 = fileBackedTasksManager.subtaskMaker("Подзадача4", "Описание подзадачи 4", Status.DONE,
+                duration7,localDateTime7);
+        Subtask subtask4 = fileBackedTasksManager.subtaskMaker("Подзадача5", "Описание подзадачи 5", Status.DONE,
+                duration8, localDateTime8);
+        Subtask subtask5 = fileBackedTasksManager.subtaskMaker("Подзадача6", "Описание подзадачи 6", Status.NEW,
+                duration9, localDateTime9);
 
         fileBackedTasksManager.subtaskAdd(3001, 2001, subtask);
         fileBackedTasksManager.subtaskAdd(3002, 2001, subtask1);

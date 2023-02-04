@@ -6,44 +6,53 @@ import Tasks.Epic;
 import Tasks.Subtask;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
 
     protected final HashMap<Integer, Task> tasks = new HashMap<>();
+    //1.Мапа с подзадачами лежит у меня в эпике, для каждого своя
     protected final HashMap<Integer, Epic> epics = new HashMap<>();
-
     protected final HistoryManager historyManager = Managers.getDefaultHistory();
-
-    protected final ArrayList<Task> allTasks = new ArrayList<>();
-    //Изначально я планировал,что будет лишь TreeSet<Task> priority, но при добавлении подзадач в эпик, меняется
-    // startTime в эпике, но так как эпик уже находится во множестве, то заново он не пересортировывается, в итоге
-    // отсортировать не получается. Я пробовал удалять эпик при добавлении, но TreeSet не удаляет. Пробовал найти
-    // ответы, током ничего не нашёл. Я думаю, что дело компараторе, который я туда передал. Или может стоит
-    // переопределить equals или hashcode. В итоге задачи сначала складываются в ArrayList<Task> allTasks, а потом уже
-    // сортируются в TreeSet<Task> priority;
     protected TreeSet<Task> priority;
+    //1. Вместо TreeMap я решил воспользоваться HashMap, потому что в TreeMap скорость доступа к элементам O(log(n)),
+    // а в HashMap О(1). Я разобрался в подсказке в тз. Ниже опишу как.
+    private final HashMap<LocalDateTime, Boolean> busyTime = new HashMap<>();
+    protected final ArrayList<Task> allTasks = new ArrayList<>();
+
+    //Интервал задачи разбивается на подынтервалы по 15 минут и начало старта каждого подынтервала записывается как ключ
+    // в HashMap busyTime, со значением false. При добавлении новой задачи, сначала проверяется лежит ли под таким ключом
+    // значение в методе isTimeFree, затем, если время свободно, то оно резервируется в методе reserveTime. В итоге
+    // вместо прежнего перебора всего списка за О(n), мы получаем несколько значений за 0(1).
+    public boolean isTimeFree(Task task){
+        boolean isTimeFree = true;
+        int period = (int)Math.ceil(task.getDuration().toMinutes()/15);
+         for (int i = 0; i <= period; i++){
+            if(busyTime.get(task.getStartTime().plusMinutes(i * 15L)) != null){
+                isTimeFree = false;
+            }
+        }
+        return isTimeFree;
+    }
+
+    public void reserveTime(Task task){
+        int period = (int)Math.ceil(task.getDuration().toMinutes()/15);
+        for (int i = 0; i <= period; i++){
+            busyTime.put(task.getStartTime().plusMinutes(i * 15L),false);
+        }
+    }
+
+    public void freeUpTime(Task task){
+        int period = (int)Math.ceil(task.getDuration().toMinutes()/15);
+        for (int i = 0; i <= period; i++){
+            busyTime.remove(task.getStartTime().plusMinutes(i * 15L));
+        }
+    }
 
     @Override
     public TreeSet<Task> getPrioritizedTasks() {
         return priority = new TreeSet<>(allTasks);
-    }
-
-    //Про пересечения за О(1) я не до конца понял, предлагается создать HashMap где ключи это целый год разбитый на
-    // интервалы по 15 минут?
-    public boolean isIntersections(Task task) {
-        boolean intersections = false;
-        for (Task allTask : allTasks) {
-            //Если время старта и конца одной задачи раньше времени старта и конца другой и наоборот, то задачи не
-            // пересекаются. И учитываются задачи, у которых не задано время, а продолжительность равна нулю
-            if (!(task.getStartTime().isBefore(allTask.getStartTime()) && task.getEndTime().isBefore(allTask.getEndTime())
-                    || allTask.getStartTime().isBefore(task.getStartTime()) && allTask.getEndTime().isBefore(task.getEndTime())
-                    || allTask.getStartTime().equals(task.getStartTime()) && allTask.getDuration().equals(Duration.ofMinutes(0)) &&
-                    allTask.getDuration().equals(task.getDuration()))) {
-                intersections = true;
-            }
-        }
-        return intersections;
     }
 
     @Override
@@ -62,17 +71,23 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Task taskMaker(String name, String description, Status status) {
-        return new Task(name, description, status);
+    public Task taskMaker(String name, String description, Status status, Duration duration, LocalDateTime startTime) {
+        return new Task(name, description, status, duration, startTime);
     }
 
     @Override
     public void taskAdd(int id, Task task) {
-        if (isIntersections(task)) {
-            System.out.println("Задача " + task.getName() + " не может выполняться одновременно с другой.");
-        } else {
+        if(task.getStartTime().equals(LocalDateTime.of(10000, 1, 1, 1, 1))){
             tasks.put(id, task);
             allTasks.add(task);
+        }else {
+            if (isTimeFree(task)) {
+                reserveTime(task);
+                tasks.put(id, task);
+                allTasks.add(task);
+            } else {
+                System.out.println("Задача " + task.getName() + " не может выполняться одновременно с другой.");
+            }
         }
     }
 
@@ -104,6 +119,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void taskRemove(int number) {
         if (tasks.containsKey(number)) {
+            freeUpTime(tasks.get(number));
             allTasks.remove(tasks.get(number));
             tasks.remove(number);
             historyManager.remove(number);
@@ -116,6 +132,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void taskDeleteAll() {
         for (Integer id : tasks.keySet()) {
+            freeUpTime(tasks.get(id));
             allTasks.remove(tasks.get(id));
             historyManager.remove(id);
         }
@@ -125,10 +142,25 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void taskUpdate(Task task, int number) {
         if (tasks.containsKey(number)) {
-            allTasks.remove(tasks.get(number));
-            tasks.remove(number);
-            tasks.put(number, task);
-            allTasks.add(task);
+            freeUpTime(task);
+            if (task.getStartTime().equals(LocalDateTime.of(10000, 1, 1, 1, 1))){
+                allTasks.remove(tasks.get(number));
+                tasks.remove(number);
+                tasks.put(number, task);
+                allTasks.add(task);
+            }else {
+                if(isTimeFree(task)){
+                    freeUpTime(tasks.get(number));
+                    allTasks.remove(tasks.get(number));
+                    tasks.remove(number);
+                    tasks.put(number, task);
+                    allTasks.add(task);
+                    reserveTime(task);
+            }else {
+                    System.out.println("Задача " + task.getName() + " не может выполняться одновременно с другой.");
+                    reserveTime(task);
+                }
+            }
         }
     }
 
@@ -142,18 +174,14 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Subtask subtaskMaker(String name, String description, Status status) {
-        return new Subtask(name, description, status);
+    public Subtask subtaskMaker(String name, String description, Status status, Duration duration, LocalDateTime startTime) {
+        return new Subtask(name, description, status, duration, startTime);
     }
 
     @Override
     public void epicAdd(int id, Epic epic) {
-        if (isIntersections(epic)) {
-            System.out.println("Задача " + epic.getName() + " не может выполняться одновременно с другой.");
-        } else {
             epics.put(id, epic);
             allTasks.add(epic);
-        }
     }
 
     @Override
@@ -161,11 +189,17 @@ public class InMemoryTaskManager implements TaskManager {
         if (checkEpicsHashMap(number)) {
             System.out.println("Такого эпика не существует");
         } else {
-            if (isIntersections(subtask)) {
-                System.out.println("Задача " + subtask.getName() + " не может выполняться одновременно с другой.");
-            } else {
+            if(subtask.getStartTime().equals(LocalDateTime.of(10000, 1, 1, 1, 1))){
                 epics.get(number).subtasks.put(id, subtask);
                 allTasks.add(subtask);
+            }else {
+                if (isTimeFree(subtask)) {
+                    reserveTime(subtask);
+                    epics.get(number).subtasks.put(id, subtask);
+                    allTasks.add(subtask);
+                } else {
+                    System.out.println("Задача " + subtask.getName() + " не может выполняться одновременно с другой.");
+                }
             }
         }
     }
@@ -195,15 +229,19 @@ public class InMemoryTaskManager implements TaskManager {
                     System.out.println("Идентификатор " + id);
                     System.out.println(subtask);
                 }
-            }/*else {
-                System.out.println("Такой подзадачи не существует, или эпик не содержит подзадач");
-            }*/
+            }
         }
     }
 
     @Override
     public void epicDeleteAll() {
         for (Integer id : epics.keySet()) {
+            for (Integer subId : epics.get(id).subtasks.keySet()){
+                freeUpTime(epics.get(id).subtasks.get(subId));
+                allTasks.remove(epics.get(id).subtasks.get(subId));
+                historyManager.remove(subId);
+            }
+            freeUpTime(epics.get(id));
             allTasks.remove(epics.get(id));
             historyManager.remove(id);
         }
@@ -215,6 +253,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (epics.containsKey(number)) {
             Epic epic = epics.get(number);
             for (Integer id : epic.subtasks.keySet()) {
+                freeUpTime(epic.subtasks.get(id));
                 allTasks.remove(epic.subtasks.get(id));
                 historyManager.remove(id);
             }
@@ -233,7 +272,6 @@ public class InMemoryTaskManager implements TaskManager {
         } else {
             System.out.println("Такого эпика не существует");
         }
-
     }
 
     @Override
@@ -271,10 +309,24 @@ public class InMemoryTaskManager implements TaskManager {
             if (epic.subtasks.isEmpty() || !(epic.subtasks.containsKey(subtaskNumber))) {
                 System.out.println("Такой подзадачи не существует");
             } else {
-                allTasks.remove(epic.subtasks.get(subtaskNumber));
-                epic.subtasks.remove(subtaskNumber);
-                epic.subtasks.put(subtaskNumber, subtask);
-                allTasks.add(subtask);
+                freeUpTime(epic.subtasks.get(subtaskNumber));
+                if (subtask.getStartTime().equals(LocalDateTime.of(10000, 1, 1, 1, 1))){
+                    allTasks.remove(epic.subtasks.get(subtaskNumber));
+                    epic.subtasks.remove(subtaskNumber);
+                    epic.subtasks.put(subtaskNumber, subtask);
+                    allTasks.add(subtask);
+                }else {
+                    if (isTimeFree(subtask)) {
+                        reserveTime(subtask);
+                        allTasks.remove(epic.subtasks.get(subtaskNumber));
+                        epic.subtasks.remove(subtaskNumber);
+                        epic.subtasks.put(subtaskNumber, subtask);
+                        allTasks.add(subtask);
+                    } else {
+                        System.out.println("Задача " + subtask.getName() + " не может выполняться одновременно с другой.");
+                        reserveTime(epic.subtasks.get(subtaskNumber));
+                    }
+                }
             }
         }
     }
@@ -285,7 +337,10 @@ public class InMemoryTaskManager implements TaskManager {
             Epic epic = epics.get(number);
             for (Integer subtaskNumber : epic.subtasks.keySet()) {
                 historyManager.remove(subtaskNumber);
+                allTasks.remove(epic.subtasks.get(subtaskNumber));
+                freeUpTime(epic.subtasks.get(subtaskNumber));
             }
+            freeUpTime(epics.get(number));
             allTasks.remove(epics.get(number));
             historyManager.remove(number);
             epics.remove(number);
@@ -299,6 +354,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (epics.containsKey(epicNumber)) {
             Epic epic = epics.get(epicNumber);
             if (epic.subtasks.containsKey(subtaskNumber)) {
+                freeUpTime(epic.subtasks.get(subtaskNumber));
                 allTasks.remove(epic.subtasks.get(subtaskNumber));
                 epic.subtasks.remove(subtaskNumber);
                 historyManager.remove(subtaskNumber);

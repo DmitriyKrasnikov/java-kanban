@@ -5,6 +5,8 @@ import Tasks.Status;
 import Tasks.Subtask;
 import Tasks.Task;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
@@ -19,7 +21,7 @@ public interface TaskManager {
 
     List<Task> getHistory();
 
-    Task taskMaker(String name, String description, Status status);
+    Task taskMaker(String name, String description, Status status, Duration duration, LocalDateTime startTime);
 
     void taskAdd(int id, Task task);
 
@@ -35,7 +37,7 @@ public interface TaskManager {
 
     Epic epicMaker(int id, String name, String description);
 
-    Subtask subtaskMaker(String name, String description, Status status);
+    Subtask subtaskMaker(String name, String description, Status status, Duration duration, LocalDateTime startTime);
 
     void epicAdd(int id, Epic epic);
 
