@@ -25,22 +25,30 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         this.file = file;
     }
 
+    public FileBackedTasksManager() {
+    }
+
     static public FileBackedTasksManager loadFromFile(File file) {
         return new FileBackedTasksManager(file);
     }
 
     //Методы для сохранения в файл
 
+    public HashMap<Integer, Task> allTaskForHistoryList() {
+        HashMap<Integer, Task> hashMap = new HashMap<>();
+        for (Integer key : super.tasks.keySet()) {
+            hashMap.put(key, super.tasks.get(key));
+        }
+        for (Integer key : super.epics.keySet()) {
+            hashMap.put(key, super.epics.get(key));
+        }
+        return hashMap;
+    }
+
     //save() сохраняет текущее состояние файла. В тз требуется добавить его в каждый модифицирующий метод родителя,
     public void save() {
         //Проходим спискам задач Task и Epic, собираем в одну мапу
-        HashMap<Integer, Task> allTasks = new HashMap<>();
-        for (Integer key : super.tasks.keySet()) {
-            allTasks.put(key, super.tasks.get(key));
-        }
-        for (Integer key : super.epics.keySet()) {
-            allTasks.put(key, super.epics.get(key));
-        }
+        HashMap<Integer, Task> allTasks = allTaskForHistoryList();
 
         try (FileWriter fileWriter = new FileWriter(file)) {
 
@@ -83,7 +91,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     //historyToString Преобразовывает историю в строку.
-    static private String historyToString(HistoryManager manager, HashMap<Integer, Task> allTasks) {
+    static public String historyToString(HistoryManager manager, HashMap<Integer, Task> allTasks) {
         List<Task> history = manager.getHistory();
         StringBuilder stringBuilder = new StringBuilder();
         // Прохожу по всем спискам, захожу в эпики, смотрю сабтаски, сверяю с объектами в истории просмотров
@@ -161,7 +169,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     super.tasks.put(parseInt(taskToPart[0]), fromString(taskToPart));
                     break;
                 case "EPIC":
-                    super.epics.put(parseInt(taskToPart[0]),(Epic) fromString(taskToPart));
+                    super.epics.put(parseInt(taskToPart[0]), (Epic) fromString(taskToPart));
                     break;
                 case "SUBTASK":
                     Epic epic = super.epics.get(parseInt(taskToPart[7]));
@@ -202,7 +210,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     //Восстанавливает историю просмотров. Вызывается в методе recovery
-    private void recoveryHistoryList(List<Integer> historyFromString) {
+    protected void recoveryHistoryList(List<Integer> historyFromString) {
         for (Integer id : historyFromString) {
             if (super.tasks.get(id) != null) {
                 super.historyManager.add(id, super.tasks.get(id));
@@ -226,7 +234,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     //Преобразовывает строку в список целых чисел. Вызывается в методе recovery
     // в качестве аргумента метода recoveryHistoryList
-    static private List<Integer> historyFromString(String value) {
+    static public List<Integer> historyFromString(String value) {
         List<Integer> id = new ArrayList<>();
         String[] ids = value.split(",");
         for (String s : ids) {
@@ -236,95 +244,80 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void taskAdd(int id, Task task) {
-        super.taskAdd(id, task);
-        save();
+    public void taskAdd(Task task) {
+        super.taskAdd(task);
     }
 
     @Override
     public void taskRemove(int number) {
         super.taskRemove(number);
-        save();
     }
 
     @Override
     public void taskDeleteAll() {
         super.taskDeleteAll();
-        save();
     }
 
     @Override
     public void taskUpdate(Task task, int number) {
         super.taskUpdate(task, number);
-        save();
     }
 
     @Override
-    public void epicAdd(int id, Epic epic) {
-        super.epicAdd(id, epic);
-        save();
+    public void epicAdd(Epic epic) {
+        super.epicAdd(epic);
     }
 
     @Override
-    public void subtaskAdd(int id, int number, Subtask subtask) {
-        super.subtaskAdd(id, number, subtask);
+    public void subtaskAdd(int number, Subtask subtask) {
+        super.subtaskAdd(number, subtask);
         super.takeEpicStatus(number);
-        save();
     }
 
     @Override
     public void epicDeleteAll() {
         super.epicDeleteAll();
-        save();
     }
 
     @Override
     public void subtaskDeleteAll(int number) {
         super.subtaskDeleteAll(number);
-        save();
     }
 
     @Override
     public void epicUpdate(Epic epic, int number) {
         super.epicUpdate(epic, number);
-        save();
     }
 
     @Override
     public void subtaskUpdate(Subtask subtask, int epicNumber, int subtaskNumber) {
         super.subtaskUpdate(subtask, epicNumber, subtaskNumber);
         super.takeEpicStatus(epicNumber);
-        save();
     }
 
     @Override
     public void epicRemove(int number) {
         super.epicRemove(number);
-        save();
     }
 
     @Override
     public void subtaskRemove(int epicNumber, int subtaskNumber) {
         super.subtaskRemove(epicNumber, subtaskNumber);
-        save();
     }
 
     @Override
     public void taskGetById(int number) {
         super.taskGetById(number);
-        save();
     }
 
     @Override
     public void epicGetById(int number) {
         super.epicGetById(number);
-        save();
     }
 
     @Override
     public void subtaskGetById(int number1, int number2) {
         super.subtaskGetById(number1, number2);
-        save();
     }
 
     @Override
@@ -332,91 +325,4 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         return super.getPrioritizedTasks();
     }
 
-    public static void main(String[] args) {
-        String filePath = new File("src\\Task.csv").getAbsolutePath();
-        File file1 = new File(filePath);
-
-        FileBackedTasksManager fileBackedTasksManager = loadFromFile(file1);
-
-        LocalDateTime localDateTime1 = LocalDateTime.of(2023, 1, 1, 12, 30);
-        LocalDateTime localDateTime2 = LocalDateTime.of(2023, 1, 2, 12, 30);
-        LocalDateTime localDateTime3 = LocalDateTime.of(2023, 1, 3, 12, 30);
-        LocalDateTime localDateTime4 = LocalDateTime.of(2023, 1, 4, 12, 30);
-        LocalDateTime localDateTime5 = LocalDateTime.of(2023, 1, 5, 12, 30);
-        LocalDateTime localDateTime6 = LocalDateTime.of(2023, 1, 6, 12, 30);
-        LocalDateTime localDateTime7 = LocalDateTime.of(2023, 1, 7, 12, 30);
-        LocalDateTime localDateTime8 = LocalDateTime.of(2023, 1, 8, 12, 30);
-        LocalDateTime localDateTime9 = LocalDateTime.of(2023, 1, 9, 12, 30);
-
-        Duration duration1 = Duration.ofMinutes(30);
-        Duration duration2 = Duration.ofMinutes(31);
-        Duration duration3 = Duration.ofMinutes(32);
-        Duration duration4 = Duration.ofMinutes(33);
-        Duration duration5 = Duration.ofMinutes(34);
-        Duration duration6 = Duration.ofMinutes(35);
-        Duration duration7 = Duration.ofMinutes(36);
-        Duration duration8 = Duration.ofMinutes(37);
-        Duration duration9 = Duration.ofMinutes(38);
-
-        Task task = fileBackedTasksManager.taskMaker("Задача1", "Описание задачи 1", Status.NEW,
-                duration1,localDateTime1);
-        Task task1 = fileBackedTasksManager.taskMaker("Задача2", "Описание задачи 2", Status.NEW,
-                duration2,localDateTime2);
-        Task task2 = fileBackedTasksManager.taskMaker("Задача10", "Описание задачи 10", Status.NEW,
-                duration3, localDateTime3);
-
-        fileBackedTasksManager.taskAdd(1001, task);
-        fileBackedTasksManager.taskAdd(1002, task1);
-        fileBackedTasksManager.taskAdd(1003, task2);
-
-        Epic epic = fileBackedTasksManager.epicMaker(2001, "Эпик", "Описание эпика ");
-        Epic epic1 = fileBackedTasksManager.epicMaker(2002, "Эпик1", "Описание эпика 1");
-        Epic epic2 = fileBackedTasksManager.epicMaker(2003, "Эпик2", "Описание эпика 2");
-
-        fileBackedTasksManager.epicAdd(2001, epic);
-        fileBackedTasksManager.epicAdd(2002, epic1);
-        fileBackedTasksManager.epicAdd(2003, epic2);
-
-        Subtask subtask = fileBackedTasksManager.subtaskMaker("Подзадача1", "Описание подзадачи 1", Status.DONE,
-                duration4, localDateTime1);
-        Subtask subtask1 = fileBackedTasksManager.subtaskMaker("Подзадача2", "Описание подзадачи 2", Status.IN_PROGRESS,
-                duration5, localDateTime5);
-        Subtask subtask2 = fileBackedTasksManager.subtaskMaker("Подзадача3", "Описание подзадачи 3", Status.NEW,
-                duration6,localDateTime6);
-        Subtask subtask3 = fileBackedTasksManager.subtaskMaker("Подзадача4", "Описание подзадачи 4", Status.DONE,
-                duration7,localDateTime7);
-        Subtask subtask4 = fileBackedTasksManager.subtaskMaker("Подзадача5", "Описание подзадачи 5", Status.DONE,
-                duration8, localDateTime8);
-        Subtask subtask5 = fileBackedTasksManager.subtaskMaker("Подзадача6", "Описание подзадачи 6", Status.NEW,
-                duration9, localDateTime9);
-
-        fileBackedTasksManager.subtaskAdd(3001, 2001, subtask);
-        fileBackedTasksManager.subtaskAdd(3002, 2001, subtask1);
-        fileBackedTasksManager.subtaskAdd(3003, 2001, subtask2);
-        fileBackedTasksManager.subtaskAdd(3004, 2002, subtask3);
-        fileBackedTasksManager.subtaskAdd(3005, 2002, subtask4);
-        fileBackedTasksManager.subtaskAdd(3006, 2002, subtask5);
-
-        for (Task priorityList : fileBackedTasksManager.getPrioritizedTasks()) {
-            System.out.println(priorityList);
-        }
-        System.out.println();
-
-        System.out.println("Вывод информации, которая записалась в файл, чтобы сравнить ее с полученной ранее.");
-        FileBackedTasksManager recoveryFileBackedTasksManager = new FileBackedTasksManager(file1);
-        recoveryFileBackedTasksManager.recovery();
-
-        recoveryFileBackedTasksManager.taskListAllTasks();
-        System.out.println();
-        recoveryFileBackedTasksManager.epicListAllTasks();
-        System.out.println();
-        for (Integer id : recoveryFileBackedTasksManager.epics.keySet()) {
-            recoveryFileBackedTasksManager.subtaskListAllTasks(id);
-        }
-        System.out.println();
-        List<Task> historyList = recoveryFileBackedTasksManager.getHistory();
-        for (Task historyListTask : historyList) {
-            System.out.println(historyListTask);
-        }
-    }
 }

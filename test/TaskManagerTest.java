@@ -23,12 +23,12 @@ abstract class TaskManagerTest<T extends TaskManager> {
     public void checkPrioritySet (){
         Task task = manager.taskMaker("Задача1", "Описание задачи 1", Status.NEW,
                 Duration.ofMinutes(66), LocalDateTime.of(2023, 1, 14, 11, 1));
-        manager.taskAdd(1001,task);
+        manager.taskAddWithId(1001,task);
         Epic epic = manager.epicMaker(2001, "Эпик", "Описание эпика ");
-        manager.epicAdd(2001,epic);
+        manager.epicAddWhithId(2001,epic);
         Subtask subtask = manager.subtaskMaker("Подзадача1", "Описание подзадачи 1", Status.DONE,
                 Duration.ofMinutes(17), LocalDateTime.of(2023, 1, 15, 11, 1));
-        manager.subtaskAdd(3001,2001, subtask);
+        manager.subtaskAddWithId(3001,2001, subtask);
         ArrayList<Task> taskArrayList = new ArrayList<>();
         taskArrayList.add(task);
         taskArrayList.add(subtask);
@@ -44,7 +44,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
                 Duration.ofMinutes(17), LocalDateTime.of(2023, 1, 15, 11, 1));
         Assertions.assertNotNull(task, "Задача не создана");
 
-        manager.taskAdd(1, task);
+        manager.taskAddWithId(1, task);
         HashMap<Integer, Task> tasks = manager.taskHashMap();
         Assertions.assertNotNull(tasks.get(1), "Задача не найдена");
         Assertions.assertEquals(tasks.get(1), task, "Задачи не совпадают");
@@ -70,7 +70,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         Assertions.assertNull(tasks.get(5), "Задача добавлена, но не обновлена");
 
         //Удаление одной задачи
-        manager.taskAdd(2, task);
+        manager.taskAddWithId(2, task);
         manager.taskRemove(1);
         tasks = manager.taskHashMap();
         Assertions.assertNull(tasks.get(1), "Задача не удалилась");
@@ -87,10 +87,10 @@ abstract class TaskManagerTest<T extends TaskManager> {
     public void taskListAllTasks() {
         Task task1 = manager.taskMaker("Test1", "Test1", Status.NEW,
                 Duration.ofMinutes(28), LocalDateTime.of(2023, 1, 4, 14, 1));
-        manager.taskAdd(1, task1);
+        manager.taskAddWithId(1, task1);
         Task task2 = manager.taskMaker("Test2", "Test2", Status.NEW,
                 Duration.ofMinutes(13), LocalDateTime.of(2023, 1, 10, 11, 1));
-        manager.taskAdd(2, task2);
+        manager.taskAddWithId(2, task2);
 
         String consoleOutput = null;
         PrintStream originalOut = System.out;
@@ -115,7 +115,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         Epic epic = manager.epicMaker(1, "Test addNewEpic", "Test addNewEpic description");
         Assertions.assertNotNull(epic, "Эпик не создан");
 
-        manager.epicAdd(1, epic);
+        manager.epicAddWhithId(1, epic);
         HashMap<Integer, Epic> epics = manager.epicHashMap();
         Assertions.assertNotNull(epics.get(1), "Эпик не найден");
         Assertions.assertEquals(epics.get(1), epic, "Эпики не совпадают");
@@ -139,7 +139,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         Assertions.assertNull(epics.get(5), "Эпик добавлен, но не обновлен");
 
         //Удаление одной задачи
-        manager.epicAdd(2, epic);
+        manager.epicAddWhithId(2, epic);
         manager.epicRemove(1);
         epics = manager.epicHashMap();
         Assertions.assertNull(epics.get(1), "Эпик не удалился");
@@ -154,9 +154,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     public void EpicListAllTasks() {
         Epic epic1 = manager.epicMaker(1, "Test1", "Test1");
-        manager.epicAdd(1, epic1);
+        manager.epicAddWhithId(1, epic1);
         Epic epic2 = manager.epicMaker(2, "Test2", "Test2");
-        manager.epicAdd(2, epic2);
+        manager.epicAddWhithId(2, epic2);
 
         String consoleOutput = null;
         PrintStream originalOut = System.out;
@@ -180,12 +180,12 @@ abstract class TaskManagerTest<T extends TaskManager> {
         //Проверка создания и добавления задачи. Методы subtaskMaker и subtaskAdd.
         //Создается эпик, в котором будут лежать сабтаски
         Epic epic1 = manager.epicMaker(10, "Test1", "Test1");
-        manager.epicAdd(10, epic1);
+        manager.epicAddWhithId(10, epic1);
         Subtask subtask = manager.subtaskMaker("Test addNewSubtask", "Test addNewSubtask description", Status.NEW,
                 Duration.ofMinutes(93), LocalDateTime.of(2023, 1, 10, 11, 1));
         Assertions.assertNotNull(subtask, "Задача не создана");
 
-        manager.subtaskAdd(1, 10, subtask);
+        manager.subtaskAddWithId(1, 10, subtask);
         Assertions.assertNotNull(epic1.subtasks.get(1), "Задача не найдена");
         Assertions.assertEquals(epic1.subtasks.get(1), subtask, "Задачи не совпадают");
 
@@ -208,7 +208,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         Assertions.assertNull(epic1.subtasks.get(5), "Задача добавлена, но не обновлена");
 
         //Удаление одной задачи
-        manager.subtaskAdd(2, 10, subtask);
+        manager.subtaskAddWithId(2, 10, subtask);
         manager.subtaskRemove(10, 1);
         Assertions.assertNull(epic1.subtasks.get(1), "Задача не удалилась");
         Assertions.assertEquals(epic1.subtasks.size(), 1, "Задача не удалилась");
@@ -221,13 +221,13 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     public void SubtaskListAllTasks() {
         Epic epic1 = manager.epicMaker(10, "Epic", "Epic");
-        manager.epicAdd(10, epic1);
+        manager.epicAddWhithId(10, epic1);
         Subtask subtask1 = manager.subtaskMaker("Test1", "Test1", Status.NEW,
                 Duration.ofMinutes(45), LocalDateTime.of(2023, 1, 11, 1, 1));
-        manager.subtaskAdd(1, 10, subtask1);
+        manager.subtaskAddWithId(1, 10, subtask1);
         Subtask subtask2 = manager.subtaskMaker("Test2", "Test2", Status.NEW,
                 Duration.ofMinutes(27), LocalDateTime.of(2023, 1, 1, 1, 1));
-        manager.subtaskAdd(2, 10, subtask2);
+        manager.subtaskAddWithId(2, 10, subtask2);
 
         String consoleOutput = null;
         PrintStream originalOut = System.out;
@@ -249,7 +249,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     public void checkingForChangesEpicStatus() {
         Epic epic = manager.epicMaker(10, "Epic", "Epic");
-        manager.epicAdd(10, epic);
+        manager.epicAddWhithId(10, epic);
         Subtask subtask1 = manager.subtaskMaker("Test1", "Test1", Status.NEW,
                 Duration.ofMinutes(34), LocalDateTime.of(2023, 1, 11, 11, 1));
         Subtask subtask2 = manager.subtaskMaker("Test2", "Test2", Status.NEW,
@@ -261,9 +261,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
         Assertions.assertEquals(epic.getStatus(), Status.NEW, "Статус у эпика без подзадач рассчитывается неверно");
 
         //Все подзадачи со статусом NEW
-        manager.subtaskAdd(1, 10, subtask1);
-        manager.subtaskAdd(2, 10, subtask2);
-        manager.subtaskAdd(3, 10, subtask3);
+        manager.subtaskAddWithId(1, 10, subtask1);
+        manager.subtaskAddWithId(2, 10, subtask2);
+        manager.subtaskAddWithId(3, 10, subtask3);
         manager.takeEpicStatus(10);
         Assertions.assertEquals(epic.getStatus(), Status.NEW, "Статус у эпика с подзадачами со статусом NEW" +
                 " рассчитывается неверно");
@@ -292,16 +292,16 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     public void checkingHistoryList() {
         Epic epic = manager.epicMaker(2001, "Epic", "Epic");
-        manager.epicAdd(2001, epic);
+        manager.epicAddWhithId(2001, epic);
         Subtask subtask1 = manager.subtaskMaker("Subtask1", "Subtask1", Status.NEW,
                 Duration.ofMinutes(35), LocalDateTime.of(2023, 1, 7, 1, 1));
         Subtask subtask2 = manager.subtaskMaker("Subtask2", "Subtask2", Status.NEW,
                 Duration.ofMinutes(25), LocalDateTime.of(2023, 1, 17, 11, 1));
-        manager.subtaskAdd(3001, 2001, subtask1);
-        manager.subtaskAdd(3002, 2001, subtask2);
+        manager.subtaskAddWithId(3001, 2001, subtask1);
+        manager.subtaskAddWithId(3002, 2001, subtask2);
         Task task = manager.taskMaker("Task", "Task", Status.NEW,
                 Duration.ofMinutes(0), LocalDateTime.of(2023, 11, 1, 10, 1));
-        manager.taskAdd(1001, task);
+        manager.taskAddWithId(1001, task);
 
         manager.subtaskGetById(2001, 3001);
         manager.taskGetById(1001);

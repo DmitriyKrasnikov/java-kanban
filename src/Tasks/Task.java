@@ -9,8 +9,14 @@ public class Task implements Comparable<Task> {
     private final String name;
     private final String description;
     private Status status;
+    private static int generalId = 1000;
+    private final int ownId = generalId + 1;
     private Duration duration = Duration.ofMinutes(0);
     private LocalDateTime startTime = LocalDateTime.of(10000, 1, 1, 1, 1);
+
+    public static void setGeneralId(int generalId) {
+        Task.generalId = generalId;
+    }
 
     public Task(String name, String description, Status status, Duration duration, LocalDateTime startTime) {
         this.name = name;
@@ -42,6 +48,8 @@ public class Task implements Comparable<Task> {
     public void setStatus(Status status) {
         this.status = status;
     }
+    public int getId() { return ownId;}
+    public static void setId() { Task.generalId = Task.generalId + 1;}
 
     public void setDuration(Duration duration) {
         this.duration = duration;

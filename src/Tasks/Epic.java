@@ -7,9 +7,22 @@ import java.util.HashMap;
 public class Epic extends Task {
     public HashMap<Integer, Subtask> subtasks;
 
+    private static int generalId = 2000;
+    private final int epicId = generalId + 1;
+
     public Epic(String name, String description, Status status, HashMap<Integer, Subtask> subtasks) {
         super(name, description, status);
         this.subtasks = subtasks;
+    }
+
+    public static void setGeneralId(int generalId) {
+        Epic.generalId = generalId;
+    }
+
+    public int getId() { return epicId;}
+
+    public static void setId() {
+        Epic.generalId = Epic.generalId + 1;
     }
 
     @Override

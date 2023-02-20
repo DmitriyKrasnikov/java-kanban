@@ -9,7 +9,6 @@ import java.util.HashMap;
 
 public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager> {
 
-    //У меня тест проходит. Причину, по которой не проходит у тебя, не знаю.
     static File file = new File("test\\TaskTest.csv");
 
     @BeforeEach
@@ -34,7 +33,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksM
     @Test
     public void recoveryAndSaveEpicWithoutSubtask() {
         Epic epic = manager.epicMaker(2001, "TestEpic", "TestEpicDescription");
-        manager.epicAdd(2001, epic);
+        manager.epicAddWhithId(2001, epic);
         Assertions.assertEquals(manager.epicHashMap().size(), 1);
         Assertions.assertEquals(manager.epicHashMap().get(2001), epic);
         HashMap<Integer, Epic> epics = manager.epicHashMap();

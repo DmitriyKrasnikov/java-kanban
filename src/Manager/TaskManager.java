@@ -19,11 +19,15 @@ public interface TaskManager {
 
     HashMap<Integer, Epic> epicHashMap();
 
+    HashMap<Integer, Subtask> subtaskHashMap();
+
     List<Task> getHistory();
 
     Task taskMaker(String name, String description, Status status, Duration duration, LocalDateTime startTime);
 
-    void taskAdd(int id, Task task);
+    void taskAdd(Task task);
+
+    void taskAddWithId(int id, Task task);
 
     void taskListAllTasks();
 
@@ -39,9 +43,13 @@ public interface TaskManager {
 
     Subtask subtaskMaker(String name, String description, Status status, Duration duration, LocalDateTime startTime);
 
-    void epicAdd(int id, Epic epic);
+    void epicAdd(Epic epic);
 
-    void subtaskAdd(int id, int number, Subtask subtask);
+    void epicAddWhithId(int id, Epic epic);
+
+    void subtaskAdd(int number, Subtask subtask);
+
+    void subtaskAddWithId(int id, int number, Subtask subtask);
 
     void epicListAllTasks();
 
