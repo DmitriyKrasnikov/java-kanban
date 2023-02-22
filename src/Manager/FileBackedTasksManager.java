@@ -238,6 +238,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         List<Integer> id = new ArrayList<>();
         String[] ids = value.split(",");
         for (String s : ids) {
+            if (s.isBlank()){continue;}
             id.add(parseInt(s));
         }
         return id;
@@ -287,6 +288,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     @Override
     public void epicUpdate(Epic epic, int number) {
         super.epicUpdate(epic, number);
+        super.takeEpicStatus(number);
     }
 
     @Override

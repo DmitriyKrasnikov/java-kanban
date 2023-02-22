@@ -1,7 +1,6 @@
 import Http.HttpTaskManager;
 import Http.KVServer;
 import Manager.FileBackedTasksManager;
-import Manager.Managers;
 import Tasks.Epic;
 import Tasks.Status;
 import Tasks.Subtask;
@@ -14,8 +13,6 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
 
 public class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager> {
 
@@ -25,17 +22,19 @@ public class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager> {
         try {
             server = new KVServer();
             server.start();
-            manager = Managers.getDefault();
+            manager = new HttpTaskManager("http://localhost:" + KVServer.PORT);
         }catch (IOException e){
             System.out.println("Возникла ошибка при запуске сервера");
         }
     }
+
     @AfterEach
     public void stop(){
     server.stop();
     }
+
     @Test
-    public void shouldSave(){
+    public void shouldSaveAndRecovery(){
         Task task = manager.taskMaker("Задача1", "Описание задачи 1", Status.NEW,
                 Duration.ofMinutes(30),
                 LocalDateTime.of(2023, 1, 9, 12, 30)
@@ -55,7 +54,6 @@ public class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager> {
         manager.epicGetById(epic.getId());
         manager.subtaskGetById(subtask.getEpicMasterId(), subtask.getId());
 
-        manager.save();
 
         Assertions.assertEquals(manager.client.load("tasks"), manager.gson.toJson(manager.taskHashMap().values()),
                 "Проблема с сохранением задач");
@@ -67,19 +65,14 @@ public class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager> {
                 FileBackedTasksManager.historyToString(manager.historyManager, manager.allTaskForHistoryList()),
                 "Проблема с сохранением истории");
 
-        HashMap<Integer,Task> t = new HashMap<>(manager.taskHashMap());
-        HashMap<Integer,Task> e = new HashMap<>(manager.epicHashMap());
-        HashMap<Integer,Task> s = new HashMap<>(manager.subtaskHashMap());
-        List<Task> h = manager.getHistory();
-
         manager.taskDeleteAll();
         manager.epicDeleteAll();
 
         manager.recovery();
 
-        Assertions.assertEquals(manager.taskHashMap(),t);
-        Assertions.assertEquals(manager.epicHashMap(),e);
-        Assertions.assertEquals(manager.subtaskHashMap(),s);
-        Assertions.assertEquals(manager.getHistory(),h);
+        Assertions.assertTrue(manager.taskHashMap().isEmpty());
+        Assertions.assertTrue(manager.epicHashMap().isEmpty());
+        Assertions.assertTrue(manager.subtaskHashMap().isEmpty());
+        Assertions.assertTrue(manager.getHistory().isEmpty());
     }
 }

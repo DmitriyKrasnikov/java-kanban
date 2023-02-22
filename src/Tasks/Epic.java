@@ -8,7 +8,7 @@ public class Epic extends Task {
     public HashMap<Integer, Subtask> subtasks;
 
     private static int generalId = 2000;
-    private final int epicId = generalId + 1;
+    private int epicId = generalId + 1;
 
     public Epic(String name, String description, Status status, HashMap<Integer, Subtask> subtasks) {
         super(name, description, status);
@@ -20,6 +20,7 @@ public class Epic extends Task {
     }
 
     public int getId() { return epicId;}
+    public void setEpicId() { epicId = generalId+1;}
 
     public static void setId() {
         Epic.generalId = Epic.generalId + 1;
@@ -32,7 +33,7 @@ public class Epic extends Task {
 
     @Override
     public LocalDateTime getStartTime() {
-        LocalDateTime localDateTime = super.getStartTime();
+        LocalDateTime localDateTime = LocalDateTime.of(10000, 1, 1, 1, 1);
         for (Integer id : subtasks.keySet()) {
             if (localDateTime == super.getStartTime()) {
                 localDateTime = subtasks.get(id).getStartTime();
@@ -47,7 +48,7 @@ public class Epic extends Task {
 
     @Override
     public LocalDateTime getEndTime() {
-        LocalDateTime localDateTime = super.getEndTime();
+        LocalDateTime localDateTime = LocalDateTime.of(1000, 1, 1, 1, 1);
         for (Integer id : subtasks.keySet()) {
             if (localDateTime == super.getStartTime()) {
                 localDateTime = subtasks.get(id).getEndTime();

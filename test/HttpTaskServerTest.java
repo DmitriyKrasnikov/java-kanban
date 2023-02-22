@@ -1,4 +1,5 @@
 import Http.HttpTaskServer;
+import Http.KVServer;
 import Manager.Managers;
 import Tasks.Epic;
 import Tasks.Status;
@@ -24,6 +25,7 @@ public class HttpTaskServerTest {
     HttpTaskServer server;
     HttpClient client;
     Gson gson = Managers.getGson();
+    KVServer kvServer;
 
     public String getRequestParameter(int anyTaskId, int epicIdForSubtask){
         if (epicIdForSubtask == 0){
@@ -36,9 +38,11 @@ public class HttpTaskServerTest {
     @BeforeEach
     public void start() {
         try {
+            kvServer = new KVServer();
+            kvServer.start();
             server = new HttpTaskServer();
-            client = HttpClient.newHttpClient();
             server.start();
+            client = HttpClient.newHttpClient();
         } catch (IOException e) {
             System.out.println("Возникла ошибка при запуске сервера");
         }
@@ -47,6 +51,7 @@ public class HttpTaskServerTest {
     @AfterEach
     public void stop() {
         server.stop();
+        kvServer.stop();
     }
 
     public void fillTaskManager() {
@@ -204,6 +209,7 @@ public class HttpTaskServerTest {
                 LocalDateTime.of(2023, 1, 9, 18, 30)
         );
 
+        epicUp.setStatus(Status.DONE);
         anyTaskId = task.getId();
         String jsonTaskUp = gson.toJson(taskUp);
         putAllTaskOfTaskType("/task",getRequestParameter(anyTaskId,epicIdForSubtask),jsonTaskUp);

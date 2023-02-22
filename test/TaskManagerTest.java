@@ -48,9 +48,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         HashMap<Integer, Task> tasks = manager.taskHashMap();
         Assertions.assertNotNull(tasks.get(1), "Задача не найдена");
         Assertions.assertEquals(tasks.get(1), task, "Задачи не совпадают");
-
-        //Проверка получения задачи по Id. Так как метод taskGetById void, то я решил проверить,
-        // что он выводит просмотром записи в истории просмотров.
+        
         manager.taskGetById(1);
         //Получение задачи по несуществующему id
         manager.taskGetById(5);
@@ -82,7 +80,6 @@ abstract class TaskManagerTest<T extends TaskManager> {
         Assertions.assertEquals(tasks.size(), 0, "Остались неудаленные задачи");
     }
 
-    //Решение нашёл в интернете. Как работает примерно понимаю.
     @Test
     public void taskListAllTasks() {
         Task task1 = manager.taskMaker("Test1", "Test1", Status.NEW,

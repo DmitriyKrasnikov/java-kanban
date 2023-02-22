@@ -1,9 +1,9 @@
 package Http;
 
-import Manager.InMemoryTaskManager;
 import Manager.Managers;
 import Manager.TaskManager;
 import Tasks.Epic;
+import Tasks.Status;
 import Tasks.Subtask;
 import Tasks.Task;
 import com.google.gson.Gson;
@@ -28,10 +28,9 @@ public class HttpTaskServer {
     public HttpTaskServer() throws IOException {
         server = HttpServer.create(new InetSocketAddress(PORT), 0);
         server.createContext("/task", this::handle);
-        taskManager = new InMemoryTaskManager();
+        taskManager = Managers.getDefault();
         gson = Managers.getGson();
     }
-
 
         public void handle(HttpExchange exchange) {
         String[] path = getTaskType(exchange).split(",");
@@ -43,9 +42,10 @@ public class HttpTaskServer {
                     case "GET":
                          if (path[0].equals("history")) {
                             sendText(exchange, gson.toJson(taskManager.getHistory()), 200);
-                        }
-                        sendText(exchange, getTaskToString(path[0], id, epicIdForSubtask), 200);
-                        break;
+                        }else {
+                             sendText(exchange, getTaskToString(path[0], id, epicIdForSubtask), 200);
+                         }
+                         break;
                     case "DELETE":
                         sendText(exchange, choiceDeleteMethod(path[0], id, epicIdForSubtask), 200);
                         break;
@@ -85,7 +85,7 @@ public class HttpTaskServer {
     }
 
     private String getTaskType(HttpExchange exchange) {
-        String parameter = exchange.getRequestURI().getRawQuery();
+        String parameter = exchange.getRequestURI().getQuery();
         String path = exchange.getRequestURI().getPath().replaceFirst("/task", "")
                 .replaceFirst("/", "");
         String taskType = "null";
@@ -115,7 +115,9 @@ public class HttpTaskServer {
 
     private void choiceGetMethod(String taskType, int id, int epicIdForSubtask) {
         if (taskType.equals("null")) {
-            taskManager.getPrioritizedTasks();
+            for (Task task: taskManager.getPrioritizedTasks()) {
+                System.out.println(task);
+            }
         } else if (id == 0) {
             switch (taskType) {
                 case "task":
@@ -194,6 +196,12 @@ public class HttpTaskServer {
                     if (task.getDuration() == null) {
                         task.setDuration(Duration.ofMinutes(0));
                     }
+                    if (task.getStatus() == null) {
+                        task.setStatus(Status.NEW);
+                    }
+                    if (task.getId() == 0) {
+                        task.setOwnId();
+                    }
                     taskManager.taskAdd(task);
                     return "Задача " + task.getName() + " добавлена";
                 case "epic":
@@ -208,6 +216,12 @@ public class HttpTaskServer {
                     if (subtask.getDuration() == null) {
                         subtask.setDuration(Duration.ofMinutes(0));
                     }
+                    if (subtask.getStatus() == null) {
+                        subtask.setStatus(Status.NEW);
+                    }
+                    if (subtask.getId() == 0) {
+                        subtask.setOwnId();
+                    }
                     taskManager.subtaskAdd(epicIdForSubtask, subtask);
                     return "Подзадача " + subtask.getName() + " добавлена";
                 default:
@@ -217,14 +231,44 @@ public class HttpTaskServer {
             switch (taskType) {
                 case "task":
                     Task task = gson.fromJson(request, Task.class);
+                    if (task.getStartTime() == null) {
+                        task.setStartTime(LocalDateTime.of(10000, 1, 1, 1, 1));
+                    }
+                    if (task.getDuration() == null) {
+                        task.setDuration(Duration.ofMinutes(0));
+                    }
+                    if (task.getStatus() == null) {
+                        task.setStatus(Status.NEW);
+                    }
+                    if (task.getId() == 0) {
+                        task.setOwnId();
+                    }
                     taskManager.taskUpdate(task, id);
                     return "Задача " + task.getName() + " добавлена";
                 case "epic":
                     Epic epic = gson.fromJson(request, Epic.class);
+                    epic.setEpicId();
+                    if (taskManager.epicHashMap().containsKey(id)) {
+                        epic.subtasks = (taskManager.epicHashMap().get(id)).subtasks;
+                    }
+                    epic.setDuration(epic.getDuration());
+                    epic.setStartTime(epic.getStartTime());
                     taskManager.epicUpdate(epic, id);
                     return "Эпик " + epic.getName() + " добавлен";
                 case "subtask":
                     Subtask subtask = gson.fromJson(request, Subtask.class);
+                    if (subtask.getStartTime() == null) {
+                        subtask.setStartTime(LocalDateTime.of(10000, 1, 1, 1, 1));
+                    }
+                    if (subtask.getDuration() == null) {
+                        subtask.setDuration(Duration.ofMinutes(0));
+                    }
+                    if (subtask.getStatus() == null) {
+                        subtask.setStatus(Status.NEW);
+                    }
+                    if (subtask.getId() == 0) {
+                        subtask.setOwnId();
+                    }
                     taskManager.subtaskUpdate(subtask, epicIdForSubtask, id);
                     return "Подзадача " + subtask.getName() + " добавлена";
                 default:

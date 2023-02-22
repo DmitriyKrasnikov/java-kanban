@@ -20,6 +20,7 @@ public class Subtask extends Task {
     public int getId() {
         return subId;
     }
+
     public static void setId() {
         Subtask.generalId = Subtask.generalId + 1;
     }

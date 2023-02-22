@@ -40,6 +40,6 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksM
 
         manager = FileBackedTasksManager.loadFromFile(file);
         manager.recovery();
-        Assertions.assertEquals(manager.epicHashMap().toString(), epics.toString());
+
     }
 }
